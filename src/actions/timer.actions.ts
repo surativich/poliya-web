@@ -204,3 +204,93 @@ export async function endSession(
   revalidatePath('/');
   return { success: true };
 }
+
+export async function endSessionWithNewCustomer(
+  sessionId: string, 
+  resourceId: string, 
+  totalSeconds: number, 
+  gameCost: number, 
+  formData: FormData
+) {
+  const name = formData.get("name") as string;
+  const phone = formData.get("phone") as string || '';
+  const village = formData.get("village") as string || '';
+  const photo = formData.get("photo") as File | null;
+
+  // 1. Get current session to get items_cost
+  const { data: session } = await supabase
+    .from('sessions')
+    .select('items_cost')
+    .eq('id', sessionId)
+    .single();
+
+  const itemsCost = session?.items_cost || 0;
+  const totalCost = gameCost + itemsCost;
+
+  // 2. Upload photo if exists
+  let photo_url = null;
+  if (photo && photo.size > 0) {
+    const fileName = `${Date.now()}_${photo.name.replace(/\s/g, '_')}`;
+    const { error: uploadError } = await supabase.storage
+      .from('customers')
+      .upload(fileName, photo);
+
+    if (!uploadError) {
+      const { data: { publicUrl } } = supabase.storage
+        .from('customers')
+        .getPublicUrl(fileName);
+      photo_url = publicUrl;
+    }
+  }
+
+  // 3. Create customer
+  const { data: newCust, error: createError } = await supabase
+    .from('customers')
+    .insert([{
+      full_name: name,
+      phone_number: phone,
+      village,
+      photo_url,
+      total_debt: totalCost
+    }])
+    .select()
+    .single();
+
+  if (createError || !newCust) {
+    return { success: false, error: "Mijoz yaratishda xato: " + (createError?.message || '') };
+  }
+
+  // 4. Record debt
+  await supabase.from('debt_transactions').insert([{
+    customer_id: newCust.id,
+    amount: totalCost,
+    type: 'debt',
+    description: 'O\'yin va mahsulotlar uchun qarz'
+  }]);
+
+  // 5. Update session
+  const { error } = await supabase
+    .from('sessions')
+    .update({
+      ended_at: new Date().toISOString(),
+      status: 'completed',
+      total_seconds: totalSeconds,
+      game_cost: gameCost,
+      total_cost: totalCost,
+      payment_method: 'debt'
+    })
+    .eq('id', sessionId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  // 6. Update resource status
+  await supabase
+    .from('resources')
+    .update({ status: 'free' })
+    .eq('id', resourceId);
+
+  revalidatePath('/');
+  return { success: true };
+}

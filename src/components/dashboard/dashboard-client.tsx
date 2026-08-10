@@ -2,9 +2,9 @@
 
 import { Activity, Banknote, CreditCard, DollarSign, Users, Loader2, PackagePlus, CheckCircle2 } from "lucide-react";
 import { useTimer } from "@/hooks/use-timer";
-import { startSession, endSession } from "@/actions/timer.actions";
+import { startSession, endSession, endSessionWithNewCustomer } from "@/actions/timer.actions";
 import { addSessionItem } from "@/actions/session-items.actions";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export function DashboardClient({ 
@@ -22,7 +22,8 @@ export function DashboardClient({
 }) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [addProductModal, setAddProductModal] = useState<{ isOpen: boolean, sessionId: string | null }>({ isOpen: false, sessionId: null });
-  const [checkoutModal, setCheckoutModal] = useState<{ isOpen: boolean, session: any | null, resource: any | null, elapsedSeconds: number, gameCost: number, showCustomerSelect: boolean, selectedCustomerId: string, isNewCustomer: boolean, newCustomerName: string, newCustomerPhone: string }>({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false, newCustomerName: '', newCustomerPhone: '' });
+  const [checkoutModal, setCheckoutModal] = useState<{ isOpen: boolean, session: any | null, resource: any | null, elapsedSeconds: number, gameCost: number, showCustomerSelect: boolean, selectedCustomerId: string, isNewCustomer: boolean }>({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false });
+  const newCustomerFormRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
 
   const handleStart = async (resourceId: string, rate: number) => {
@@ -36,7 +37,7 @@ export function DashboardClient({
   };
 
   const handleEndClick = (session: any, resource: any, elapsedSeconds: number, gameCost: number) => {
-    setCheckoutModal({ isOpen: true, session, resource, elapsedSeconds, gameCost, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false, newCustomerName: '', newCustomerPhone: '' });
+    setCheckoutModal({ isOpen: true, session, resource, elapsedSeconds, gameCost, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false });
   };
 
   const handleFinalizeCheckout = async (paymentMethod: string) => {
@@ -47,35 +48,56 @@ export function DashboardClient({
       return;
     }
     
-    if (paymentMethod === 'debt' && checkoutModal.showCustomerSelect) {
-      if (checkoutModal.isNewCustomer && !checkoutModal.newCustomerName.trim()) {
-        alert("Iltimos, yangi mijozning ismini kiriting!");
-        return;
-      }
-      if (!checkoutModal.isNewCustomer && !checkoutModal.selectedCustomerId) {
-        alert("Iltimos, ro'yxatdan mijozni tanlang!");
-        return;
-      }
-    }
-
     setLoadingAction(`checkout`);
-    
-    const res = await endSession(
-      checkoutModal.session.id, 
-      checkoutModal.resource.id, 
-      checkoutModal.elapsedSeconds, 
-      checkoutModal.gameCost, 
-      paymentMethod, 
-      checkoutModal.selectedCustomerId,
-      checkoutModal.isNewCustomer ? checkoutModal.newCustomerName : undefined,
-      checkoutModal.isNewCustomer ? checkoutModal.newCustomerPhone : undefined
-    );
-    if (!res.success) {
-      alert("Xatolik: " + res.error);
+
+    if (paymentMethod === 'debt' && checkoutModal.showCustomerSelect) {
+      if (checkoutModal.isNewCustomer) {
+        if (newCustomerFormRef.current) {
+          const formData = new FormData(newCustomerFormRef.current);
+          const name = formData.get("name") as string;
+          if (!name || !name.trim()) {
+            alert("Iltimos, yangi mijozning ismini kiriting!");
+            setLoadingAction(null);
+            return;
+          }
+          const res = await endSessionWithNewCustomer(
+            checkoutModal.session.id, 
+            checkoutModal.resource.id, 
+            checkoutModal.elapsedSeconds, 
+            checkoutModal.gameCost, 
+            formData
+          );
+          if (!res.success) alert("Xatolik: " + res.error);
+        }
+      } else {
+        if (!checkoutModal.selectedCustomerId) {
+          alert("Iltimos, ro'yxatdan mijozni tanlang!");
+          setLoadingAction(null);
+          return;
+        }
+        const res = await endSession(
+          checkoutModal.session.id, 
+          checkoutModal.resource.id, 
+          checkoutModal.elapsedSeconds, 
+          checkoutModal.gameCost, 
+          paymentMethod, 
+          checkoutModal.selectedCustomerId
+        );
+        if (!res.success) alert("Xatolik: " + res.error);
+      }
+    } else {
+      const res = await endSession(
+        checkoutModal.session.id, 
+        checkoutModal.resource.id, 
+        checkoutModal.elapsedSeconds, 
+        checkoutModal.gameCost, 
+        paymentMethod
+      );
+      if (!res.success) alert("Xatolik: " + res.error);
     }
     
     setLoadingAction(null);
-    setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false, newCustomerName: '', newCustomerPhone: '' });
+    setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false });
     router.refresh();
   };
 
@@ -262,22 +284,36 @@ export function DashboardClient({
                   </div>
                   
                   {checkoutModal.isNewCustomer ? (
-                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                    <form ref={newCustomerFormRef} className="space-y-3 animate-in fade-in slide-in-from-top-2" onSubmit={(e) => { e.preventDefault(); handleFinalizeCheckout('debt'); }}>
                       <input 
                         type="text" 
+                        name="name"
                         placeholder="Mijozning ism-familiyasi (majburiy)" 
-                        value={checkoutModal.newCustomerName}
-                        onChange={(e) => setCheckoutModal(prev => ({...prev, newCustomerName: e.target.value}))}
+                        required
                         className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-white outline-none focus:border-indigo-500"
                       />
                       <input 
                         type="text" 
+                        name="phone"
                         placeholder="Telefon raqami (ixtiyoriy)" 
-                        value={checkoutModal.newCustomerPhone}
-                        onChange={(e) => setCheckoutModal(prev => ({...prev, newCustomerPhone: e.target.value}))}
                         className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-white outline-none focus:border-indigo-500"
                       />
-                    </div>
+                      <input 
+                        type="text" 
+                        name="village"
+                        placeholder="Qishlog'i (ixtiyoriy)" 
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-white outline-none focus:border-indigo-500"
+                      />
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs text-slate-400">Rasmini yuklash (ixtiyoriy)</label>
+                        <input 
+                          type="file" 
+                          name="photo"
+                          accept="image/*"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white outline-none focus:border-indigo-500 text-sm file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20"
+                        />
+                      </div>
+                    </form>
                   ) : (
                     <div className="animate-in fade-in slide-in-from-top-2">
                       <select 
@@ -298,7 +334,7 @@ export function DashboardClient({
                   </button>
                 </div>
               )}
-              <button onClick={() => setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false, newCustomerName: '', newCustomerPhone: '' })} className="w-full mt-2 bg-transparent hover:bg-slate-800 text-slate-400 py-2 rounded-lg text-sm font-medium transition-colors">
+              <button onClick={() => setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false })} className="w-full mt-2 bg-transparent hover:bg-slate-800 text-slate-400 py-2 rounded-lg text-sm font-medium transition-colors">
                 Bekor qilish
               </button>
             </div>
