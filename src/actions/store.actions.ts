@@ -82,6 +82,12 @@ export async function processDirectSale(cartItems: any[], paymentMethod: string,
       session_id: session.id,
       description: "Do'kondan mahsulot"
     }]);
+
+    // Update customer total_debt
+    const { data: customer } = await supabase.from('customers').select('total_debt').eq('id', customerId).single();
+    if (customer) {
+      await supabase.from('customers').update({ total_debt: (customer.total_debt || 0) + totalCost }).eq('id', customerId);
+    }
   }
 
   revalidatePath("/");
