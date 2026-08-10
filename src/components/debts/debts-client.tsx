@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Users, Upload, Camera, Search, Loader2 } from "lucide-react";
-import { addDebt, payDebt } from "@/actions/debts.actions";
+import { Plus, Users, Upload, Camera, Search, Loader2, History, X } from "lucide-react";
+import { addDebt, payDebt, getCustomerHistory } from "@/actions/debts.actions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export function DebtsClient({ initialCustomers }: { initialCustomers: any[] }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [payModal, setPayModal] = useState<{ isOpen: boolean, customer: any | null }>({ isOpen: false, customer: null });
+  const [historyModal, setHistoryModal] = useState<{ isOpen: boolean, customer: any | null, history: any[] }>({ isOpen: false, customer: null, history: [] });
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
@@ -50,6 +51,13 @@ export function DebtsClient({ initialCustomers }: { initialCustomers: any[] }) {
     c.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (c.phone_number && c.phone_number.includes(searchTerm))
   );
+
+  async function handleViewHistory(customer: any) {
+    setLoadingAction(`history-${customer.id}`);
+    const history = await getCustomerHistory(customer.id);
+    setHistoryModal({ isOpen: true, customer, history: history || [] });
+    setLoadingAction(null);
+  }
 
   return (
     <div className="space-y-6">
@@ -116,13 +124,22 @@ export function DebtsClient({ initialCustomers }: { initialCustomers: any[] }) {
                     {customer.total_debt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm
                   </p>
                 </div>
-                <button 
-                  onClick={() => setPayModal({ isOpen: true, customer })}
-                  disabled={customer.total_debt <= 0}
-                  className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  To'lash
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => handleViewHistory(customer)}
+                    disabled={loadingAction === `history-${customer.id}`}
+                    className="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center"
+                  >
+                    {loadingAction === `history-${customer.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <History className="w-4 h-4" />}
+                  </button>
+                  <button 
+                    onClick={() => setPayModal({ isOpen: true, customer })}
+                    disabled={customer.total_debt <= 0}
+                    className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    To'lash
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -230,6 +247,75 @@ export function DebtsClient({ initialCustomers }: { initialCustomers: any[] }) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* History Modal */}
+      {historyModal.isOpen && historyModal.customer && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-md">
+          <div className="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/90 rounded-t-3xl sm:rounded-2xl z-10">
+              <div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <History className="w-5 h-5 text-indigo-400" />
+                  Qarz Tarixi
+                </h3>
+                <p className="text-sm text-slate-400 mt-1">{historyModal.customer.full_name}</p>
+              </div>
+              <button onClick={() => setHistoryModal({ isOpen: false, customer: null, history: [] })} className="p-2.5 bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto flex-1 space-y-4">
+              {historyModal.history.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">Tarix topilmadi</div>
+              ) : (
+                historyModal.history.map((tx: any) => (
+                  <div key={tx.id} className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${tx.type === 'debt' ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                        {tx.type === 'debt' ? "Qarz Oldi" : "Qarz To'ladi"}
+                      </span>
+                      <span className="text-xs text-slate-400 font-medium">
+                        {new Date(tx.created_at).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center my-3">
+                      <span className="text-slate-300 font-medium">{tx.description || 'Izohsiz'}</span>
+                      <span className={`text-lg font-bold ${tx.type === 'debt' ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {tx.type === 'payment' ? '-' : '+'}{tx.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm
+                      </span>
+                    </div>
+
+                    {/* Show Session Details if available */}
+                    {tx.sessions && (
+                      <div className="mt-3 pt-3 border-t border-slate-800 space-y-2">
+                        {tx.sessions.resources?.name && (
+                          <div className="flex justify-between text-xs">
+                            <span className="text-slate-500">O'yin/Joy:</span>
+                            <span className="text-slate-300 font-medium">{tx.sessions.resources.name} ({(tx.sessions.total_seconds / 3600).toFixed(1)} soat) - {tx.sessions.game_cost} so'm</span>
+                          </div>
+                        )}
+                        
+                        {tx.sessions.session_items && tx.sessions.session_items.length > 0 && (
+                          <div className="text-xs">
+                            <span className="text-slate-500 block mb-1">Mahsulotlar:</span>
+                            <ul className="list-disc list-inside text-slate-300 font-medium pl-1">
+                              {tx.sessions.session_items.map((item: any, idx: number) => (
+                                <li key={idx}>{item.products?.name} x {item.quantity}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}
