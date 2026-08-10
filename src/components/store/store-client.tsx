@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef } from "react";
-import { Search, ShoppingCart, Plus, Minus, X, Loader2 } from "lucide-react";
+import { Search, ShoppingCart, Plus, Minus, X, Loader2, Package } from "lucide-react";
 import { processDirectSale } from "@/actions/store.actions";
 import { useRouter } from "next/navigation";
 
