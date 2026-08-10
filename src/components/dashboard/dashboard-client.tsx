@@ -365,46 +365,46 @@ function ResourceCard({ resource, session, loadingAction, onStart, onEnd, onAddP
   const isStarting = loadingAction === `start-${resource.id}`;
 
   return (
-    <div className={`relative bg-slate-900 rounded-xl border p-5 overflow-hidden transition-all duration-300 flex flex-col ${isOccupied ? 'border-rose-500/30 hover:border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.1)]' : 'border-emerald-500/30 hover:border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.05)]'}`}>
+    <div className={`relative bg-white/5 backdrop-blur-md rounded-[1.5rem] border p-5 overflow-hidden transition-all duration-300 flex flex-col hover:-translate-y-1 ${isOccupied ? 'border-rose-500/20 hover:border-rose-500/40 shadow-[0_8px_30px_rgba(244,63,94,0.1)]' : 'border-emerald-500/20 hover:border-emerald-500/40 shadow-[0_8px_30px_rgba(16,185,129,0.05)]'}`}>
       
       {/* Background gradient indicator */}
-      <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-[50px] opacity-20 -mr-10 -mt-10 pointer-events-none ${isOccupied ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
+      <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] opacity-20 pointer-events-none transition-colors duration-500 ${isOccupied ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
 
-      <div className="flex justify-between items-start mb-4 relative z-10">
+      <div className="flex justify-between items-start mb-5 relative z-10">
         <div>
-          <h4 className="text-lg font-bold text-white flex items-center gap-2">
+          <h4 className="text-xl font-bold text-white flex items-center gap-2">
             {resource.name}
           </h4>
-          <p className="text-xs text-slate-400 mt-1">{rate.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm / soat</p>
+          <p className="text-xs text-indigo-300/70 mt-1 font-medium tracking-wide">{rate.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm / soat</p>
         </div>
-        <div className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${isOccupied ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${isOccupied ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></span>
+        <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-2 shadow-inner ${isOccupied ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+          <span className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${isOccupied ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></span>
           {isOccupied ? 'BAND' : 'BO\'SH'}
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-end space-y-4 relative z-10">
-        <div className="bg-slate-950/50 rounded-lg p-4 text-center border border-slate-800/50">
-          <p className={`font-mono text-3xl font-bold tracking-wider ${isOccupied ? 'text-white' : 'text-slate-600'}`}>
+      <div className="flex-1 flex flex-col justify-end space-y-5 relative z-10">
+        <div className="bg-slate-950/40 rounded-2xl p-5 text-center border border-white/5 shadow-inner">
+          <p className={`font-mono text-4xl font-black tracking-widest ${isOccupied ? 'text-white' : 'text-slate-600'}`}>
             {isOccupied ? formattedTime : '00:00:00'}
           </p>
           {isOccupied && (
-            <div className="mt-2 flex items-center justify-center gap-4 text-xs font-medium">
-              <span className="text-indigo-400">O'yin: {currentAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</span>
-              {session.items_cost > 0 && <span className="text-emerald-400">Mahsulot: {session.items_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</span>}
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-bold bg-white/5 inline-flex px-4 py-1.5 rounded-full border border-white/5">
+              <span className="text-indigo-300">O'yin: {currentAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</span>
+              {session.items_cost > 0 && <span className="text-emerald-400">Do'kon: {session.items_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</span>}
             </div>
           )}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           {isOccupied ? (
             <>
-              <button onClick={onAddProduct} className="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-2 rounded-lg text-sm font-medium transition-colors border border-slate-700">
+              <button onClick={onAddProduct} className="flex-[2] bg-white/10 hover:bg-white/20 text-white py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95 border border-white/10">
                 + Mahsulot
               </button>
               <button 
                 onClick={() => onEnd(session, resource, elapsedSeconds, currentAmount)}
-                className="flex-1 flex justify-center items-center bg-rose-500 hover:bg-rose-600 text-white py-2 rounded-lg text-sm font-medium transition-colors shadow-[0_0_10px_rgba(244,63,94,0.3)]"
+                className="flex-[3] flex justify-center items-center bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-[0_8px_25px_rgba(244,63,94,0.3)] border border-rose-400/20"
               >
                 Yakunlash
               </button>
@@ -413,9 +413,9 @@ function ResourceCard({ resource, session, loadingAction, onStart, onEnd, onAddP
             <button 
               onClick={() => onStart(resource.id, rate)}
               disabled={isStarting}
-              className="w-full flex justify-center items-center bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-lg text-sm font-medium transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)] disabled:opacity-50"
+              className="w-full flex justify-center items-center bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-4 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-[0_8px_30px_rgba(16,185,129,0.3)] border border-emerald-400/20 disabled:opacity-50"
             >
-              {isStarting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Boshlash'}
+              {isStarting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'BOSHLASH'}
             </button>
           )}
         </div>
