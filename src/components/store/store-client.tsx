@@ -197,7 +197,7 @@ export function StoreClient({ products, customers }: { products: any[], customer
 
       {/* Bottom Sheet Cart Modal */}
       {isCartOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-md bg-slate-900 rounded-t-3xl sm:rounded-3xl flex flex-col max-h-[90vh] shadow-2xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:zoom-in-95">
             <div className="flex justify-between items-center p-5 border-b border-slate-800">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">

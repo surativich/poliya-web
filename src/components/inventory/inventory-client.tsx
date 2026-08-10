@@ -63,7 +63,7 @@ export function InventoryClient({ initialProducts }: { initialProducts: any[] })
 
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-800">
               <tr>
                 <th className="px-6 py-4 font-medium">Mahsulot Nomi</th>
