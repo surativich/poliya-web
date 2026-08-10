@@ -117,7 +117,16 @@ export async function startSession(resourceId: string, hourlyRate: number) {
   return { success: true, data };
 }
 
-export async function endSession(sessionId: string, resourceId: string, totalSeconds: number, gameCost: number, paymentMethod: string, customerId?: string) {
+export async function endSession(
+  sessionId: string, 
+  resourceId: string, 
+  totalSeconds: number, 
+  gameCost: number, 
+  paymentMethod: string, 
+  customerId?: string,
+  newCustomerName?: string,
+  newCustomerPhone?: string
+) {
   // 1. Get current session to get items_cost
   const { data: session } = await supabase
     .from('sessions')
@@ -152,19 +161,43 @@ export async function endSession(sessionId: string, resourceId: string, totalSec
     .eq('id', resourceId);
     
   // 4. Handle debt if applicable
-  if (paymentMethod === 'debt' && customerId) {
-    // get customer
-    const { data: customer } = await supabase.from('customers').select('total_debt').eq('id', customerId).single();
-    if (customer) {
-      // insert debt tx
-      await supabase.from('debt_transactions').insert([{
-        customer_id: customerId,
-        amount: totalCost,
-        type: 'debt',
-        description: 'O\'yin va mahsulotlar uchun qarz'
-      }]);
-      // update customer debt
-      await supabase.from('customers').update({ total_debt: customer.total_debt + totalCost }).eq('id', customerId);
+  if (paymentMethod === 'debt') {
+    let finalCustomerId = customerId;
+
+    // Create new customer if requested
+    if (newCustomerName) {
+      const { data: newCust, error: createError } = await supabase
+        .from('customers')
+        .insert([{
+          full_name: newCustomerName,
+          phone_number: newCustomerPhone || '',
+          total_debt: totalCost
+        }])
+        .select()
+        .single();
+        
+      if (!createError && newCust) {
+        finalCustomerId = newCust.id;
+        // The debt is already accounted for in total_debt at creation, but we still need the transaction record
+        await supabase.from('debt_transactions').insert([{
+          customer_id: finalCustomerId,
+          amount: totalCost,
+          type: 'debt',
+          description: 'O\'yin va mahsulotlar uchun qarz'
+        }]);
+      }
+    } else if (finalCustomerId) {
+      // Existing customer
+      const { data: customer } = await supabase.from('customers').select('total_debt').eq('id', finalCustomerId).single();
+      if (customer) {
+        await supabase.from('debt_transactions').insert([{
+          customer_id: finalCustomerId,
+          amount: totalCost,
+          type: 'debt',
+          description: 'O\'yin va mahsulotlar uchun qarz'
+        }]);
+        await supabase.from('customers').update({ total_debt: customer.total_debt + totalCost }).eq('id', finalCustomerId);
+      }
     }
   }
 

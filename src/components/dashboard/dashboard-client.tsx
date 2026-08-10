@@ -22,7 +22,7 @@ export function DashboardClient({
 }) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [addProductModal, setAddProductModal] = useState<{ isOpen: boolean, sessionId: string | null }>({ isOpen: false, sessionId: null });
-  const [checkoutModal, setCheckoutModal] = useState<{ isOpen: boolean, session: any | null, resource: any | null, elapsedSeconds: number, gameCost: number, showCustomerSelect: boolean, selectedCustomerId: string }>({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '' });
+  const [checkoutModal, setCheckoutModal] = useState<{ isOpen: boolean, session: any | null, resource: any | null, elapsedSeconds: number, gameCost: number, showCustomerSelect: boolean, selectedCustomerId: string, isNewCustomer: boolean, newCustomerName: string, newCustomerPhone: string }>({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false, newCustomerName: '', newCustomerPhone: '' });
   const router = useRouter();
 
   const handleStart = async (resourceId: string, rate: number) => {
@@ -36,7 +36,7 @@ export function DashboardClient({
   };
 
   const handleEndClick = (session: any, resource: any, elapsedSeconds: number, gameCost: number) => {
-    setCheckoutModal({ isOpen: true, session, resource, elapsedSeconds, gameCost, showCustomerSelect: false, selectedCustomerId: '' });
+    setCheckoutModal({ isOpen: true, session, resource, elapsedSeconds, gameCost, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false, newCustomerName: '', newCustomerPhone: '' });
   };
 
   const handleFinalizeCheckout = async (paymentMethod: string) => {
@@ -47,20 +47,35 @@ export function DashboardClient({
       return;
     }
     
-    if (paymentMethod === 'debt' && checkoutModal.showCustomerSelect && !checkoutModal.selectedCustomerId) {
-      alert("Iltimos, mijozni tanlang!");
-      return;
+    if (paymentMethod === 'debt' && checkoutModal.showCustomerSelect) {
+      if (checkoutModal.isNewCustomer && !checkoutModal.newCustomerName.trim()) {
+        alert("Iltimos, yangi mijozning ismini kiriting!");
+        return;
+      }
+      if (!checkoutModal.isNewCustomer && !checkoutModal.selectedCustomerId) {
+        alert("Iltimos, ro'yxatdan mijozni tanlang!");
+        return;
+      }
     }
 
     setLoadingAction(`checkout`);
     
-    const res = await endSession(checkoutModal.session.id, checkoutModal.resource.id, checkoutModal.elapsedSeconds, checkoutModal.gameCost, paymentMethod, checkoutModal.selectedCustomerId);
+    const res = await endSession(
+      checkoutModal.session.id, 
+      checkoutModal.resource.id, 
+      checkoutModal.elapsedSeconds, 
+      checkoutModal.gameCost, 
+      paymentMethod, 
+      checkoutModal.selectedCustomerId,
+      checkoutModal.isNewCustomer ? checkoutModal.newCustomerName : undefined,
+      checkoutModal.isNewCustomer ? checkoutModal.newCustomerPhone : undefined
+    );
     if (!res.success) {
       alert("Xatolik: " + res.error);
     }
     
     setLoadingAction(null);
-    setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '' });
+    setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false, newCustomerName: '', newCustomerPhone: '' });
     router.refresh();
   };
 
@@ -235,26 +250,55 @@ export function DashboardClient({
                   </div>
                 </>
               ) : (
-                <>
-                  <h4 className="text-sm font-medium text-slate-300 mb-2">Qarz uchun mijozni tanlang</h4>
-                  <select 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-white outline-none"
-                    value={checkoutModal.selectedCustomerId}
-                    onChange={(e) => setCheckoutModal(prev => ({...prev, selectedCustomerId: e.target.value}))}
-                  >
-                    <option value="" disabled>Mijozni tanlang...</option>
-                    {customers.map(c => (
-                      <option key={c.id} value={c.id}>{c.full_name} ({c.phone_number})</option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-slate-500 mt-1 mb-3">Yangi mijozni "Qarz Daftar" bo'limidan qo'shishingiz mumkin.</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-slate-300">Qarz uchun mijozni tanlang</h4>
+                    <button 
+                      onClick={() => setCheckoutModal(prev => ({...prev, isNewCustomer: !prev.isNewCustomer}))} 
+                      className="text-xs font-semibold text-indigo-400 hover:text-indigo-300"
+                    >
+                      {checkoutModal.isNewCustomer ? "Ro'yxatdan tanlash" : "+ Yangi mijoz"}
+                    </button>
+                  </div>
                   
-                  <button onClick={() => handleFinalizeCheckout('debt')} disabled={loadingAction === 'checkout'} className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">
+                  {checkoutModal.isNewCustomer ? (
+                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                      <input 
+                        type="text" 
+                        placeholder="Mijozning ism-familiyasi (majburiy)" 
+                        value={checkoutModal.newCustomerName}
+                        onChange={(e) => setCheckoutModal(prev => ({...prev, newCustomerName: e.target.value}))}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-white outline-none focus:border-indigo-500"
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Telefon raqami (ixtiyoriy)" 
+                        value={checkoutModal.newCustomerPhone}
+                        onChange={(e) => setCheckoutModal(prev => ({...prev, newCustomerPhone: e.target.value}))}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-white outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                  ) : (
+                    <div className="animate-in fade-in slide-in-from-top-2">
+                      <select 
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-white outline-none focus:border-indigo-500"
+                        value={checkoutModal.selectedCustomerId}
+                        onChange={(e) => setCheckoutModal(prev => ({...prev, selectedCustomerId: e.target.value}))}
+                      >
+                        <option value="" disabled>Mijozni tanlang...</option>
+                        {customers.map(c => (
+                          <option key={c.id} value={c.id}>{c.full_name} ({c.phone_number || 'raqamsiz'})</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
+                  <button onClick={() => handleFinalizeCheckout('debt')} disabled={loadingAction === 'checkout'} className="w-full mt-4 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">
                     QARZGA YOZISH
                   </button>
-                </>
+                </div>
               )}
-              <button onClick={() => setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '' })} className="w-full mt-2 bg-transparent hover:bg-slate-800 text-slate-400 py-2 rounded-lg text-sm font-medium transition-colors">
+              <button onClick={() => setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false, newCustomerName: '', newCustomerPhone: '' })} className="w-full mt-2 bg-transparent hover:bg-slate-800 text-slate-400 py-2 rounded-lg text-sm font-medium transition-colors">
                 Bekor qilish
               </button>
             </div>
