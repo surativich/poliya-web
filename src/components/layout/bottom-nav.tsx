@@ -2,18 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, History, Settings, Package, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, History, Settings, Package, Store, Shield } from "lucide-react";
 
 export function BottomNav() {
   const pathname = usePathname();
 
-  // Barcha linklarni emas, eng muhim 5 tasini pastki menyuga chiqaramiz (mobil uchun)
   const mobileLinks = [
     { name: "Asosiy", path: "/", icon: LayoutDashboard },
+    { name: "Do'kon", path: "/store", icon: Store },
     { name: "Ombor", path: "/inventory", icon: Package },
     { name: "Qarzlar", path: "/debts", icon: Users },
-    { name: "Tarix", path: "/history", icon: History },
-    { name: "Hisobot", path: "/reports", icon: BarChart3 },
+    { name: "Admin", path: "/admin", icon: Shield },
   ];
 
   return (
