@@ -12,11 +12,26 @@ export async function processDirectSale(cartItems: any[], paymentMethod: string,
 
   const totalCost = cartItems.reduce((acc, item) => acc + (item.sale_price * item.quantity), 0);
 
+  let storeResId = null;
+  const { data: existingRes } = await supabase.from('resources').select('id').eq('name', "Do'kon Kassasi").single();
+  if (existingRes) {
+    storeResId = existingRes.id;
+  } else {
+    // create virtual resource
+    const { data: newRes } = await supabase.from('resources').insert([{ 
+      name: "Do'kon Kassasi", 
+      type: "store", 
+      status: "free", 
+      hourly_rate: 0 
+    }]).select().single();
+    if (newRes) storeResId = newRes.id;
+  }
+
   // 1. Create a completed session for the sale
   const { data: session, error: sessionError } = await supabase
     .from('sessions')
     .insert([{
-      resource_id: null,
+      resource_id: storeResId,
       status: 'completed',
       hourly_rate_snapshot: 0,
       total_seconds: 0,
