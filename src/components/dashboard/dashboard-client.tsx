@@ -335,7 +335,7 @@ export function DashboardClient({
   );
 }
 
-function StatCard({ title, value, icon: Icon, color, bgColor }: any) {
+export function StatCard({ title, value, icon: Icon, color, bgColor }: any) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4 hover:border-slate-700 transition-colors">
       <div className={`w-12 h-12 rounded-lg ${bgColor} flex items-center justify-center`}>

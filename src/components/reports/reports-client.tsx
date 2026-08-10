@@ -1,7 +1,7 @@
 "use client";
 
 import { BarChart3, TrendingUp, Calendar, Clock, DollarSign, Banknote, CreditCard, Users, Activity } from "lucide-react";
-import { StatCard } from "@/components/dashboard/stat-card";
+import { StatCard } from "@/components/dashboard/dashboard-client";
 
 export function ReportsClient({ initialData, stats }: { initialData: any[], stats: any }) {
   // Simplistic stats calculation
