@@ -14,16 +14,21 @@ export async function processDirectSale(cartItems: any[], paymentMethod: string,
 
   let storeResId = null;
   const { data: existingRes } = await supabase.from('resources').select('id').eq('name', "Do'kon Kassasi").single();
+  
   if (existingRes) {
     storeResId = existingRes.id;
   } else {
     // create virtual resource
-    const { data: newRes } = await supabase.from('resources').insert([{ 
+    const { data: newRes, error: resError } = await supabase.from('resources').insert([{ 
       name: "Do'kon Kassasi", 
-      type: "store", 
+      type: "billiard", 
       status: "free", 
       hourly_rate: 0 
     }]).select().single();
+    
+    if (resError) {
+      return { success: false, error: "Kassa yaratishda xato: " + resError.message };
+    }
     if (newRes) storeResId = newRes.id;
   }
 
