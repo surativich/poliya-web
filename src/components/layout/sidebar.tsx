@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, Users, Box, History, Settings, FileText, QrCode, MonitorPlay, CreditCard, Package, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, Box, History, Settings, FileText, MonitorPlay, CreditCard, Package, BarChart3 } from "lucide-react";
 
 export function Sidebar() {
   const routes = [
@@ -8,7 +8,6 @@ export function Sidebar() {
     { name: "Qarz Daftari", path: "/debts", icon: Users },
     { name: "Tarix", path: "/history", icon: History },
     { name: "Hisobotlar", path: "/reports", icon: BarChart3 },
-    { name: "QR Kodlar", path: "/qr-codes", icon: QrCode },
     { name: "Sozlamalar", path: "/settings", icon: Settings },
   ];
 

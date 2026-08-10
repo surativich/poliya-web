@@ -1,4 +1,4 @@
-import { getResources, getActiveSessions, getTodayStats } from "@/actions/timer.actions";
+import { getResources, getActiveSessions } from "@/actions/timer.actions";
 import { getProducts } from "@/actions/inventory.actions";
 import { getCustomers } from "@/actions/debts.actions";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
@@ -6,11 +6,10 @@ import { DashboardClient } from "@/components/dashboard/dashboard-client";
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const [resources, sessions, products, stats, customers] = await Promise.all([
+  const [resources, sessions, products, customers] = await Promise.all([
     getResources(),
     getActiveSessions(),
     getProducts(),
-    getTodayStats(),
     getCustomers()
   ]);
 
@@ -18,7 +17,6 @@ export default async function DashboardPage() {
     initialResources={resources || []} 
     initialSessions={sessions || []} 
     products={products || []} 
-    stats={stats}
     customers={customers || []}
   />;
 }

@@ -11,13 +11,11 @@ export function DashboardClient({
   initialResources, 
   initialSessions,
   products,
-  stats,
   customers
 }: { 
   initialResources: any[], 
   initialSessions: any[],
   products: any[],
-  stats: any,
   customers: any[]
 }) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
@@ -129,15 +127,6 @@ export function DashboardClient({
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-white">Dashboard</h2>
         <p className="text-sm text-slate-400 mt-1">Biznesingizning joriy holati va kunlik statistikasi.</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        <StatCard title="Bugungi tushum" value={`${stats.totalIncome.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, " ")} so'm`} icon={DollarSign} color="text-emerald-400" bgColor="bg-emerald-500/10" />
-        <StatCard title="Naqd tushum" value={`${stats.cashIncome.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, " ")} so'm`} icon={Banknote} color="text-indigo-400" bgColor="bg-indigo-500/10" />
-        <StatCard title="Click/Payme" value={`${stats.cardIncome.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, " ")} so'm`} icon={CreditCard} color="text-blue-400" bgColor="bg-blue-500/10" />
-        <StatCard title="Yangi qarzlar" value={`${stats.newDebts.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, " ")} so'm`} icon={Users} color="text-amber-400" bgColor="bg-amber-500/10" />
-        <StatCard title="Faol o'yinlar" value={`${initialSessions.length} ta`} icon={Activity} color="text-rose-400" bgColor="bg-rose-500/10" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-8">

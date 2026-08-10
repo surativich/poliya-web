@@ -1,8 +1,9 @@
 "use client";
 
-import { BarChart3, TrendingUp, Calendar, Clock, DollarSign } from "lucide-react";
+import { BarChart3, TrendingUp, Calendar, Clock, DollarSign, Banknote, CreditCard, Users, Activity } from "lucide-react";
+import { StatCard } from "@/components/dashboard/stat-card";
 
-export function ReportsClient({ initialData }: { initialData: any[] }) {
+export function ReportsClient({ initialData, stats }: { initialData: any[], stats: any }) {
   // Simplistic stats calculation
   const totalRevenue = initialData.reduce((acc, curr) => acc + (curr.total_cost || 0), 0);
   const totalGames = initialData.length;
@@ -16,6 +17,13 @@ export function ReportsClient({ initialData }: { initialData: any[] }) {
           Hisobotlar
         </h2>
         <p className="text-sm text-slate-400 mt-1">Biznesingizning asosiy ko'rsatkichlari va tahlillari.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard title="Bugungi tushum" value={`${stats.totalIncome.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={DollarSign} color="text-emerald-400" bgColor="bg-emerald-500/10" />
+        <StatCard title="Naqd tushum" value={`${stats.cashIncome.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={Banknote} color="text-indigo-400" bgColor="bg-indigo-500/10" />
+        <StatCard title="Click/Payme" value={`${stats.cardIncome.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={CreditCard} color="text-blue-400" bgColor="bg-blue-500/10" />
+        <StatCard title="Yangi qarzlar" value={`${stats.newDebts.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={Users} color="text-amber-400" bgColor="bg-amber-500/10" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
