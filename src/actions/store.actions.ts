@@ -18,7 +18,7 @@ export async function processDirectSale(cartItems: any[], paymentMethod: string,
     .insert([{
       resource_id: null,
       status: 'completed',
-      hourly_rate: 0,
+      hourly_rate_snapshot: 0,
       total_seconds: 0,
       game_cost: 0,
       items_cost: totalCost,
