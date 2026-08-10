@@ -11,16 +11,18 @@ export function DashboardClient({
   initialResources, 
   initialSessions,
   products,
-  stats
+  stats,
+  customers
 }: { 
   initialResources: any[], 
   initialSessions: any[],
   products: any[],
-  stats: any
+  stats: any,
+  customers: any[]
 }) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [addProductModal, setAddProductModal] = useState<{ isOpen: boolean, sessionId: string | null }>({ isOpen: false, sessionId: null });
-  const [checkoutModal, setCheckoutModal] = useState<{ isOpen: boolean, session: any | null, resource: any | null, elapsedSeconds: number, gameCost: number }>({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0 });
+  const [checkoutModal, setCheckoutModal] = useState<{ isOpen: boolean, session: any | null, resource: any | null, elapsedSeconds: number, gameCost: number, showCustomerSelect: boolean, selectedCustomerId: string }>({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '' });
   const router = useRouter();
 
   const handleStart = async (resourceId: string, rate: number) => {
@@ -34,20 +36,31 @@ export function DashboardClient({
   };
 
   const handleEndClick = (session: any, resource: any, elapsedSeconds: number, gameCost: number) => {
-    setCheckoutModal({ isOpen: true, session, resource, elapsedSeconds, gameCost });
+    setCheckoutModal({ isOpen: true, session, resource, elapsedSeconds, gameCost, showCustomerSelect: false, selectedCustomerId: '' });
   };
 
   const handleFinalizeCheckout = async (paymentMethod: string) => {
     if (!checkoutModal.session || !checkoutModal.resource) return;
+    
+    if (paymentMethod === 'debt' && !checkoutModal.showCustomerSelect) {
+      setCheckoutModal(prev => ({ ...prev, showCustomerSelect: true }));
+      return;
+    }
+    
+    if (paymentMethod === 'debt' && checkoutModal.showCustomerSelect && !checkoutModal.selectedCustomerId) {
+      alert("Iltimos, mijozni tanlang!");
+      return;
+    }
+
     setLoadingAction(`checkout`);
     
-    const res = await endSession(checkoutModal.session.id, checkoutModal.resource.id, checkoutModal.elapsedSeconds, checkoutModal.gameCost, paymentMethod);
+    const res = await endSession(checkoutModal.session.id, checkoutModal.resource.id, checkoutModal.elapsedSeconds, checkoutModal.gameCost, paymentMethod, checkoutModal.selectedCustomerId);
     if (!res.success) {
       alert("Xatolik: " + res.error);
     }
     
     setLoadingAction(null);
-    setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0 });
+    setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '' });
     router.refresh();
   };
 
@@ -212,13 +225,36 @@ export function DashboardClient({
             </div>
 
             <div className="p-6 space-y-4">
-              <h4 className="text-sm font-medium text-slate-300 mb-2">To'lov turini tanlang</h4>
-              <div className="grid grid-cols-3 gap-3">
-                <button onClick={() => handleFinalizeCheckout('cash')} className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg text-sm font-bold transition-colors">NAQD</button>
-                <button onClick={() => handleFinalizeCheckout('card')} className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg text-sm font-bold transition-colors">CLICK</button>
-                <button onClick={() => handleFinalizeCheckout('debt')} className="bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-bold transition-colors">QARZ</button>
-              </div>
-              <button onClick={() => setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0 })} className="w-full mt-2 bg-transparent hover:bg-slate-800 text-slate-400 py-2 rounded-lg text-sm font-medium transition-colors">
+              {!checkoutModal.showCustomerSelect ? (
+                <>
+                  <h4 className="text-sm font-medium text-slate-300 mb-2">To'lov turini tanlang</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button onClick={() => handleFinalizeCheckout('cash')} disabled={loadingAction === 'checkout'} className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">NAQD</button>
+                    <button onClick={() => handleFinalizeCheckout('card')} disabled={loadingAction === 'checkout'} className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">CLICK</button>
+                    <button onClick={() => handleFinalizeCheckout('debt')} disabled={loadingAction === 'checkout'} className="bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">QARZ</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h4 className="text-sm font-medium text-slate-300 mb-2">Qarz uchun mijozni tanlang</h4>
+                  <select 
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-white outline-none"
+                    value={checkoutModal.selectedCustomerId}
+                    onChange={(e) => setCheckoutModal(prev => ({...prev, selectedCustomerId: e.target.value}))}
+                  >
+                    <option value="" disabled>Mijozni tanlang...</option>
+                    {customers.map(c => (
+                      <option key={c.id} value={c.id}>{c.full_name} ({c.phone_number})</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-slate-500 mt-1 mb-3">Yangi mijozni "Qarz Daftar" bo'limidan qo'shishingiz mumkin.</p>
+                  
+                  <button onClick={() => handleFinalizeCheckout('debt')} disabled={loadingAction === 'checkout'} className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">
+                    QARZGA YOZISH
+                  </button>
+                </>
+              )}
+              <button onClick={() => setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, showCustomerSelect: false, selectedCustomerId: '' })} className="w-full mt-2 bg-transparent hover:bg-slate-800 text-slate-400 py-2 rounded-lg text-sm font-medium transition-colors">
                 Bekor qilish
               </button>
             </div>

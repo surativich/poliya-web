@@ -117,7 +117,7 @@ export async function startSession(resourceId: string, hourlyRate: number) {
   return { success: true, data };
 }
 
-export async function endSession(sessionId: string, resourceId: string, totalSeconds: number, gameCost: number, paymentMethod: string) {
+export async function endSession(sessionId: string, resourceId: string, totalSeconds: number, gameCost: number, paymentMethod: string, customerId?: string) {
   // 1. Get current session to get items_cost
   const { data: session } = await supabase
     .from('sessions')
@@ -150,6 +150,23 @@ export async function endSession(sessionId: string, resourceId: string, totalSec
     .from('resources')
     .update({ status: 'free' })
     .eq('id', resourceId);
+    
+  // 4. Handle debt if applicable
+  if (paymentMethod === 'debt' && customerId) {
+    // get customer
+    const { data: customer } = await supabase.from('customers').select('total_debt').eq('id', customerId).single();
+    if (customer) {
+      // insert debt tx
+      await supabase.from('debt_transactions').insert([{
+        customer_id: customerId,
+        amount: totalCost,
+        type: 'debt',
+        description: 'O\'yin va mahsulotlar uchun qarz'
+      }]);
+      // update customer debt
+      await supabase.from('customers').update({ total_debt: customer.total_debt + totalCost }).eq('id', customerId);
+    }
+  }
 
   revalidatePath('/');
   return { success: true };
