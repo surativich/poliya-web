@@ -255,9 +255,15 @@ export function DashboardClient({
                 <>
                   <h4 className="text-sm font-medium text-slate-300 mb-2">To'lov turini tanlang</h4>
                   <div className="grid grid-cols-3 gap-3">
-                    <button onClick={() => handleFinalizeCheckout('cash')} disabled={loadingAction === 'checkout'} className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">NAQD</button>
-                    <button onClick={() => handleFinalizeCheckout('card')} disabled={loadingAction === 'checkout'} className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">CLICK</button>
-                    <button onClick={() => handleFinalizeCheckout('debt')} disabled={loadingAction === 'checkout'} className="bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">QARZ</button>
+                    <button onClick={() => handleFinalizeCheckout('cash')} disabled={loadingAction === 'checkout'} className="bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">
+                      {loadingAction === 'checkout' ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "NAQD"}
+                    </button>
+                    <button onClick={() => handleFinalizeCheckout('card')} disabled={loadingAction === 'checkout'} className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">
+                      {loadingAction === 'checkout' ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "CLICK"}
+                    </button>
+                    <button onClick={() => handleFinalizeCheckout('debt')} disabled={loadingAction === 'checkout'} className="bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">
+                      {loadingAction === 'checkout' ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "QARZ"}
+                    </button>
                   </div>
                 </>
               ) : (
@@ -318,8 +324,8 @@ export function DashboardClient({
                     </div>
                   )}
                   
-                  <button onClick={() => handleFinalizeCheckout('debt')} disabled={loadingAction === 'checkout'} className="w-full mt-4 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">
-                    QARZGA YOZISH
+                  <button onClick={() => handleFinalizeCheckout('debt')} disabled={loadingAction === 'checkout'} className="w-full mt-4 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">
+                    {loadingAction === 'checkout' ? <><Loader2 className="w-4 h-4 animate-spin" /> Qarzga yozilmoqda...</> : "QARZGA YOZISH"}
                   </button>
                 </div>
               )}
