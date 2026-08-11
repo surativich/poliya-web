@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, History, Package, Store, Shield } from "lucide-react";
+import { LayoutDashboard, Users, History, Package, Store, Shield, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCurrentRole } from "@/actions/auth.actions";
 
@@ -17,13 +17,15 @@ export function BottomNav() {
   const mobileLinks = role === "cashier" ? [
     { name: "Asosiy", path: "/", icon: LayoutDashboard },
     { name: "Do'kon", path: "/store", icon: Store },
+    { name: "Bron", path: "/reservations", icon: Calendar },
     { name: "Tarix", path: "/history", icon: History },
-    { name: "Qarzlar", path: "/debts", icon: Users },
+    { name: "Qarz", path: "/debts", icon: Users },
   ] : [
     { name: "Asosiy", path: "/", icon: LayoutDashboard },
     { name: "Do'kon", path: "/store", icon: Store },
+    { name: "Bron", path: "/reservations", icon: Calendar },
     { name: "Ombor", path: "/inventory", icon: Package },
-    { name: "Qarzlar", path: "/debts", icon: Users },
+    { name: "Qarz", path: "/debts", icon: Users },
     { name: "Admin", path: "/admin", icon: Shield },
   ];
 

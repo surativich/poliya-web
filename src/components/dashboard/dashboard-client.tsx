@@ -11,12 +11,14 @@ export function DashboardClient({
   initialResources, 
   initialSessions,
   products,
-  customers
+  customers,
+  reservations = []
 }: { 
   initialResources: any[], 
   initialSessions: any[],
   products: any[],
-  customers: any[]
+  customers: any[],
+  reservations?: any[]
 }) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [addProductModal, setAddProductModal] = useState<{ isOpen: boolean, sessionId: string | null }>({ isOpen: false, sessionId: null });
@@ -138,11 +140,13 @@ export function DashboardClient({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {stadiums.map((stadium) => {
               const session = initialSessions.find(s => s.resource_id === stadium.id);
+              const resourceReservations = reservations.filter(r => r.resource_id === stadium.id && r.status === 'pending');
               return (
                 <ResourceCard 
                   key={stadium.id}
                   resource={stadium} 
                   session={session}
+                  reservations={resourceReservations}
                   loadingAction={loadingAction}
                   onStart={handleStart}
                   onEnd={handleEndClick}
@@ -161,11 +165,13 @@ export function DashboardClient({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {billiards.map((billiard) => {
               const session = initialSessions.find(s => s.resource_id === billiard.id);
+              const resourceReservations = reservations.filter(r => r.resource_id === billiard.id && r.status === 'pending');
               return (
                 <ResourceCard 
                   key={billiard.id}
                   resource={billiard} 
                   session={session}
+                  reservations={resourceReservations}
                   loadingAction={loadingAction}
                   onStart={handleStart}
                   onEnd={handleEndClick}
@@ -355,7 +361,7 @@ export function StatCard({ title, value, icon: Icon, color, bgColor }: any) {
   );
 }
 
-function ResourceCard({ resource, session, loadingAction, onStart, onEnd, onAddProduct }: any) {
+function ResourceCard({ resource, session, reservations = [], loadingAction, onStart, onEnd, onAddProduct }: any) {
   const isOccupied = resource.status === "occupied" && session;
   const startedAt = isOccupied ? session.started_at : null;
   const rate = isOccupied ? session.hourly_rate_snapshot : resource.hourly_rate;
@@ -364,10 +370,22 @@ function ResourceCard({ resource, session, loadingAction, onStart, onEnd, onAddP
   
   const isStarting = loadingAction === `start-${resource.id}`;
 
+  const today = new Date();
+  const upcomingReservations = reservations
+    .map((r: any) => ({ ...r, dateObj: new Date(r.reservation_time) }))
+    .filter((r: any) => r.dateObj > today && r.dateObj.getDate() === today.getDate())
+    .sort((a: any, b: any) => a.dateObj.getTime() - b.dateObj.getTime());
+    
+  const nextReservation = upcomingReservations[0];
+  let isReservedSoon = false;
+  if (nextReservation) {
+    const timeDiffMinutes = (nextReservation.dateObj.getTime() - today.getTime()) / (1000 * 60);
+    isReservedSoon = timeDiffMinutes <= 15;
+  }
+
   return (
-    <div className={`relative bg-white/5 backdrop-blur-md rounded-[1.5rem] border p-5 overflow-hidden transition-all duration-300 flex flex-col hover:-translate-y-1 ${isOccupied ? 'border-rose-500/20 hover:border-rose-500/40 shadow-[0_8px_30px_rgba(244,63,94,0.1)]' : 'border-emerald-500/20 hover:border-emerald-500/40 shadow-[0_8px_30px_rgba(16,185,129,0.05)]'}`}>
+    <div className={`relative bg-white/5 backdrop-blur-md rounded-[1.5rem] border p-5 overflow-hidden transition-all duration-300 flex flex-col hover:-translate-y-1 ${isOccupied ? 'border-rose-500/20 hover:border-rose-500/40 shadow-[0_8px_30px_rgba(244,63,94,0.1)]' : 'border-emerald-500/20 hover:border-emerald-500/40 shadow-[0_8px_30px_rgba(16,185,129,0.05)]'} ${isReservedSoon && !isOccupied ? 'animate-pulse border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.3)]' : ''} ${isReservedSoon && isOccupied ? 'border-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.5)]' : ''}`}>
       
-      {/* Background Image if available */}
       {resource.image_url && (
         <div 
           className="absolute inset-0 z-0 opacity-20 bg-cover bg-center transition-opacity duration-300"
@@ -376,7 +394,6 @@ function ResourceCard({ resource, session, loadingAction, onStart, onEnd, onAddP
       )}
       <div className="absolute inset-0 z-0 bg-slate-950/40 mix-blend-multiply pointer-events-none" />
 
-      {/* Background gradient indicator */}
       <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] opacity-20 pointer-events-none transition-colors duration-500 ${isOccupied ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
 
       <div className="flex justify-between items-start mb-5 relative z-10">
@@ -386,9 +403,19 @@ function ResourceCard({ resource, session, loadingAction, onStart, onEnd, onAddP
           </h4>
           <p className="text-xs text-indigo-300/70 mt-1 font-medium tracking-wide">{rate.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm / soat</p>
         </div>
-        <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-2 shadow-inner ${isOccupied ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
-          <span className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${isOccupied ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></span>
-          {isOccupied ? 'BAND' : 'BO\'SH'}
+        
+        {/* Status Badge */}
+        <div className="flex flex-col items-end gap-2">
+          {nextReservation && (
+            <div className={`px-2.5 py-1 text-[10px] font-bold rounded-full flex items-center gap-1.5 shadow-sm border ${isReservedSoon ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-slate-800/50 text-slate-300 border-white/5'}`}>
+              <Clock className="w-3 h-3" />
+              Bron: {nextReservation.dateObj.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          )}
+          <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-2 shadow-inner ${isOccupied ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
+            <span className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${isOccupied ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></span>
+            {isOccupied ? 'BAND' : 'BO\'SH'}
+          </div>
         </div>
       </div>
 
