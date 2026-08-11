@@ -86,12 +86,7 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       
-      <div 
-        className="flex-1 transition-transform duration-300 ease-out"
-        style={{
-          transform: isRefreshing ? 'translateY(60px)' : isPulling ? `translateY(${pullProgress * 60}px)` : 'translateY(0)',
-        }}
-      >
+      <div className="flex-1">
         {children}
       </div>
     </div>
