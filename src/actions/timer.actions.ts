@@ -12,6 +12,7 @@ export async function getResources() {
   const { data, error } = await supabase
     .from('resources')
     .select('*')
+    .eq('is_active', true)
     .order('name');
     
   if (error) {

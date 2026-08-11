@@ -82,7 +82,7 @@ export async function updateResource(formData: FormData) {
 }
 
 export async function deleteResource(id: string) {
-  const { error } = await supabase.from("resources").delete().eq("id", id);
+  const { error } = await supabase.from("resources").update({ is_active: false }).eq("id", id);
   if (error) return { success: false, error: error.message };
   
   revalidatePath("/");
