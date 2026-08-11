@@ -50,53 +50,52 @@ export function HistoryClient({ initialSessions }: { initialSessions: any[] }) {
         </div>
       </div>
 
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[1.5rem] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
-            <thead className="text-xs text-indigo-300 uppercase bg-slate-950/40 border-b border-white/5">
-              <tr>
-                <th className="px-6 py-5 font-bold tracking-wider">Joy / Resurs</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Boshlandi</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Yakunlandi</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Vaqt</th>
-                <th className="px-6 py-5 font-bold tracking-wider">O'yin summasi</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Mahsulotlar</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Jami Summa</th>
-                <th className="px-6 py-5 font-bold tracking-wider">To'lov turi</th>
-                <th className="px-6 py-5 font-bold tracking-wider text-right">Batafsil</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filteredSessions.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-6 py-12 text-center text-slate-500 font-medium">
-                    Tarix ma'lumotlari topilmadi.
-                  </td>
-                </tr>
-              ) : filteredSessions.map((session) => (
-                <tr key={session.id} className="hover:bg-white/5 transition-colors duration-200">
-                  <td className="px-6 py-4 font-bold text-white">{session.resources?.name}</td>
-                  <td className="px-6 py-4 text-slate-400 font-medium">{format(new Date(session.started_at), 'dd.MM.yyyy HH:mm')}</td>
-                  <td className="px-6 py-4 text-slate-400 font-medium">{session.ended_at ? format(new Date(session.ended_at), 'dd.MM.yyyy HH:mm') : '-'}</td>
-                  <td className="px-6 py-4 text-slate-400 font-mono">{formatTime(session.total_seconds)}</td>
-                  <td className="px-6 py-4 text-indigo-300 font-medium">{session.game_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
-                  <td className="px-6 py-4 text-indigo-300 font-medium">{session.items_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
-                  <td className="px-6 py-4 text-emerald-400 font-bold">{session.total_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
-                  <td className="px-6 py-4">
-                    <span className="px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider bg-white/10 text-slate-300 uppercase shadow-inner border border-white/5">
-                      {session.payment_method || 'Noma\'lum'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button onClick={() => handleViewDetails(session)} className="text-indigo-400 hover:text-white p-2.5 rounded-xl bg-white/5 hover:bg-indigo-500/20 transition-all border border-transparent hover:border-indigo-500/30">
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="grid grid-cols-1 gap-3">
+        {filteredSessions.length === 0 ? (
+          <div className="py-12 text-center text-slate-500 font-medium bg-slate-900/50 rounded-2xl border border-slate-800 border-dashed">
+            Tarix ma'lumotlari topilmadi.
+          </div>
+        ) : filteredSessions.map((session) => (
+          <div key={session.id} className="bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-2xl p-4 shadow-lg flex flex-col gap-3 relative transition-all active:scale-[0.98]">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-bold text-white text-lg flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                  {session.resources?.name}
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">{format(new Date(session.started_at), 'dd.MM.yyyy HH:mm')} &mdash; {session.ended_at ? format(new Date(session.ended_at), 'HH:mm') : '-'}</p>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="text-xl font-black text-emerald-400">{session.total_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide bg-slate-950 px-2 py-0.5 rounded-full mt-1 border border-white/5">
+                  {session.payment_method || 'Noma\'lum'}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 bg-slate-950/50 p-2.5 rounded-xl border border-white/5 mt-1">
+              <div className="flex flex-col items-center justify-center text-center">
+                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Vaqt</span>
+                <span className="font-mono font-medium text-slate-300 text-sm mt-0.5">{formatTime(session.total_seconds)}</span>
+              </div>
+              <div className="flex flex-col items-center justify-center text-center border-l border-white/5">
+                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">O'yin</span>
+                <span className="font-medium text-indigo-300 text-sm mt-0.5">{session.game_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</span>
+              </div>
+              <div className="flex flex-col items-center justify-center text-center border-l border-white/5">
+                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Mahsulot</span>
+                <span className="font-medium text-indigo-300 text-sm mt-0.5">{session.items_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => handleViewDetails(session)} 
+              className="w-full mt-1 bg-white/5 hover:bg-white/10 active:bg-white/10 text-indigo-400 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border border-white/5 transition-colors"
+            >
+              <Eye className="w-4 h-4" /> Batafsil
+            </button>
+          </div>
+        ))}
       </div>
 
       {/* Details Modal */}
