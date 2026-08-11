@@ -8,7 +8,7 @@ export function AuthProvider({ children, settings }: { children: React.ReactNode
 
   useEffect(() => {
     // Check auth status
-    const authRole = localStorage.getItem("poliya_auth");
+    const authRole = sessionStorage.getItem("poliya_auth");
     if (authRole) {
       setIsAuthenticated(true);
     } else {

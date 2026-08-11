@@ -69,7 +69,7 @@ export function LockScreen({ settings, onUnlock }: { settings: any, onUnlock: (r
         // Verify PIN
         if (newPin === (settings?.cashier_pin || "1111")) {
           // Success
-          localStorage.setItem("poliya_auth", "cashier");
+          sessionStorage.setItem("poliya_auth", "cashier");
           onUnlock("cashier");
         } else {
           // Fail
@@ -83,7 +83,7 @@ export function LockScreen({ settings, onUnlock }: { settings: any, onUnlock: (r
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (adminPassword === (settings?.admin_password || "@Samar18")) {
-      localStorage.setItem("poliya_auth", "admin");
+      sessionStorage.setItem("poliya_auth", "admin");
       onUnlock("admin");
     } else {
       handleFailedAttempt();
