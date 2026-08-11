@@ -57,6 +57,6 @@ export function BottomNav() {
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }
