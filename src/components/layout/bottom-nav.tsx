@@ -43,6 +43,7 @@ export function BottomNav() {
             <Link
               key={link.path}
               href={link.path}
+              prefetch={true}
               className={`relative flex flex-col items-center justify-center w-full py-2 px-1 transition-all duration-300 active:scale-90 ${
                 isActive ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300'
               }`}
