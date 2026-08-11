@@ -4,14 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Users, History, Package, Store, Shield, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getCurrentRole } from "@/actions/auth.actions";
 
 export function BottomNav() {
   const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    getCurrentRole().then(r => setRole(r));
+    // Lock-screen saves auth in sessionStorage as "poliya_auth" (cashier or admin)
+    const storedRole = sessionStorage.getItem("poliya_auth");
+    setRole(storedRole || "cashier"); // default to cashier if nothing found, but UI shouldn't reach here if locked
   }, []);
 
   const mobileLinks = role === "cashier" ? [
