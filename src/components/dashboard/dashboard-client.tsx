@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Banknote, CreditCard, DollarSign, Users, Loader2, PackagePlus, CheckCircle2 } from "lucide-react";
+import { Activity, Banknote, CreditCard, DollarSign, Users, Loader2, PackagePlus, CheckCircle2, Clock } from "lucide-react";
 import { useTimer } from "@/hooks/use-timer";
 import { startSession, endSession, endSessionWithNewCustomer } from "@/actions/timer.actions";
 import { addSessionItem } from "@/actions/session-items.actions";
