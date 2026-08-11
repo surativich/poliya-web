@@ -42,3 +42,16 @@ export async function getCurrentRole() {
   return role?.value || null;
 }
 
+
+export async function updatePin(role: string, newPin: string) {
+  const { error } = await supabase
+    .from("users")
+    .update({ pin_code: newPin })
+    .eq("role", role);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  return { success: true };
+}
+
