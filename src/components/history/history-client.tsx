@@ -50,45 +50,45 @@ export function HistoryClient({ initialSessions }: { initialSessions: any[] }) {
         </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[1.5rem] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left whitespace-nowrap">
-            <thead className="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-800">
+            <thead className="text-xs text-indigo-300 uppercase bg-slate-950/40 border-b border-white/5">
               <tr>
-                <th className="px-6 py-4 font-medium">Joy / Resurs</th>
-                <th className="px-6 py-4 font-medium">Boshlandi</th>
-                <th className="px-6 py-4 font-medium">Yakunlandi</th>
-                <th className="px-6 py-4 font-medium">Vaqt</th>
-                <th className="px-6 py-4 font-medium">O'yin summasi</th>
-                <th className="px-6 py-4 font-medium">Mahsulotlar</th>
-                <th className="px-6 py-4 font-medium">Jami Summa</th>
-                <th className="px-6 py-4 font-medium">To'lov turi</th>
-                <th className="px-6 py-4 font-medium text-right">Batafsil</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Joy / Resurs</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Boshlandi</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Yakunlandi</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Vaqt</th>
+                <th className="px-6 py-5 font-bold tracking-wider">O'yin summasi</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Mahsulotlar</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Jami Summa</th>
+                <th className="px-6 py-5 font-bold tracking-wider">To'lov turi</th>
+                <th className="px-6 py-5 font-bold tracking-wider text-right">Batafsil</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-white/5">
               {filteredSessions.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={9} className="px-6 py-12 text-center text-slate-500 font-medium">
                     Tarix ma'lumotlari topilmadi.
                   </td>
                 </tr>
               ) : filteredSessions.map((session) => (
-                <tr key={session.id} className="hover:bg-slate-800/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-white">{session.resources?.name}</td>
-                  <td className="px-6 py-4 text-slate-300">{format(new Date(session.started_at), 'dd.MM.yyyy HH:mm')}</td>
-                  <td className="px-6 py-4 text-slate-300">{session.ended_at ? format(new Date(session.ended_at), 'dd.MM.yyyy HH:mm') : '-'}</td>
-                  <td className="px-6 py-4 text-slate-300">{formatTime(session.total_seconds)}</td>
-                  <td className="px-6 py-4 text-slate-300">{session.game_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
-                  <td className="px-6 py-4 text-slate-300">{session.items_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
+                <tr key={session.id} className="hover:bg-white/5 transition-colors duration-200">
+                  <td className="px-6 py-4 font-bold text-white">{session.resources?.name}</td>
+                  <td className="px-6 py-4 text-slate-400 font-medium">{format(new Date(session.started_at), 'dd.MM.yyyy HH:mm')}</td>
+                  <td className="px-6 py-4 text-slate-400 font-medium">{session.ended_at ? format(new Date(session.ended_at), 'dd.MM.yyyy HH:mm') : '-'}</td>
+                  <td className="px-6 py-4 text-slate-400 font-mono">{formatTime(session.total_seconds)}</td>
+                  <td className="px-6 py-4 text-indigo-300 font-medium">{session.game_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
+                  <td className="px-6 py-4 text-indigo-300 font-medium">{session.items_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
                   <td className="px-6 py-4 text-emerald-400 font-bold">{session.total_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
                   <td className="px-6 py-4">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 uppercase">
+                    <span className="px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider bg-white/10 text-slate-300 uppercase shadow-inner border border-white/5">
                       {session.payment_method || 'Noma\'lum'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => handleViewDetails(session)} className="text-indigo-400 hover:text-indigo-300 p-2 rounded-lg hover:bg-slate-800 transition-colors">
+                    <button onClick={() => handleViewDetails(session)} className="text-indigo-400 hover:text-white p-2.5 rounded-xl bg-white/5 hover:bg-indigo-500/20 transition-all border border-transparent hover:border-indigo-500/30">
                       <Eye className="w-4 h-4" />
                     </button>
                   </td>
@@ -101,25 +101,29 @@ export function HistoryClient({ initialSessions }: { initialSessions: any[] }) {
 
       {/* Details Modal */}
       {selectedSession && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div className="p-5 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white">Sessiya tafsilotlari</h3>
-              <p className="text-sm text-slate-400 mt-1">{selectedSession.resources?.name} - {format(new Date(selectedSession.started_at), 'dd.MM.yyyy HH:mm')}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl scale-in-95">
+            <div className="p-6 border-b border-white/5 bg-slate-900/90 flex justify-between items-start">
+              <div>
+                <h3 className="text-xl font-bold text-white tracking-wide">Sessiya tafsilotlari</h3>
+                <p className="text-sm text-slate-400 mt-1 font-medium">{selectedSession.resources?.name} &bull; {format(new Date(selectedSession.started_at), 'dd.MM.yyyy HH:mm')}</p>
+              </div>
             </div>
-            <div className="p-5 max-h-96 overflow-y-auto">
-              <h4 className="text-sm font-semibold text-slate-300 mb-3">Olingan mahsulotlar</h4>
+            <div className="p-6 max-h-96 overflow-y-auto">
+              <h4 className="text-xs font-bold tracking-widest text-indigo-400 uppercase mb-4">Olingan mahsulotlar</h4>
               {sessionItems.length === 0 ? (
-                <p className="text-sm text-slate-500">Mahsulot olinmagan.</p>
+                <div className="text-center py-6">
+                  <p className="text-sm text-slate-500 font-medium">Mahsulot olinmagan.</p>
+                </div>
               ) : (
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                   {sessionItems.map(item => (
-                    <li key={item.id} className="flex justify-between items-center text-sm border-b border-slate-800 pb-2">
+                    <li key={item.id} className="flex justify-between items-center text-sm bg-white/5 p-4 rounded-2xl border border-white/5">
                       <div className="text-slate-300">
-                        <span className="text-white font-medium">{item.products?.name}</span> <br/>
-                        <span className="text-xs text-slate-500">{item.quantity} x {item.unit_sale_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</span>
+                        <span className="text-white font-bold text-base">{item.products?.name}</span> <br/>
+                        <span className="text-xs text-slate-500 font-medium mt-0.5 inline-block">{item.quantity} x {item.unit_sale_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</span>
                       </div>
-                      <div className="text-white font-medium">
+                      <div className="text-emerald-400 font-bold text-lg">
                         {item.total_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm
                       </div>
                     </li>
@@ -127,8 +131,8 @@ export function HistoryClient({ initialSessions }: { initialSessions: any[] }) {
                 </ul>
               )}
             </div>
-            <div className="p-5 border-t border-slate-800 bg-slate-900/50 text-right">
-              <button onClick={() => setSelectedSession(null)} className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
+            <div className="p-5 border-t border-white/5 bg-slate-950/50 flex justify-end">
+              <button onClick={() => setSelectedSession(null)} className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 border border-white/10">
                 Yopish
               </button>
             </div>

@@ -54,54 +54,54 @@ export function InventoryClient({ initialProducts }: { initialProducts: any[] })
         </div>
         <button 
           onClick={() => { setEditProduct(null); setIsModalOpen(true); }}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] active:scale-95"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           Yangi mahsulot
         </button>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[1.5rem] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left whitespace-nowrap">
-            <thead className="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-800">
+            <thead className="text-xs text-indigo-300 uppercase bg-slate-950/40 border-b border-white/5">
               <tr>
-                <th className="px-6 py-4 font-medium">Mahsulot Nomi</th>
-                <th className="px-6 py-4 font-medium">Kategoriya</th>
-                <th className="px-6 py-4 font-medium">Kelish Narxi</th>
-                <th className="px-6 py-4 font-medium">Sotish Narxi</th>
-                <th className="px-6 py-4 font-medium">Qoldiq</th>
-                <th className="px-6 py-4 font-medium text-right">Harakatlar</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Mahsulot Nomi</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Kategoriya</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Kelish Narxi</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Sotish Narxi</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Qoldiq</th>
+                <th className="px-6 py-5 font-bold tracking-wider text-right">Harakatlar</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-white/5">
               {initialProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">
                     Omborda hozircha mahsulot yo'q.
                   </td>
                 </tr>
               ) : initialProducts.map((product) => {
                 const isLow = product.stock_quantity <= product.min_stock;
                 return (
-                  <tr key={product.id} className="hover:bg-slate-800/50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-white flex items-center gap-2">
-                      {isLow && <AlertCircle className="w-4 h-4 text-amber-500" />}
+                  <tr key={product.id} className="hover:bg-white/5 transition-colors duration-200">
+                    <td className="px-6 py-4 font-bold text-white flex items-center gap-2">
+                      {isLow && <AlertCircle className="w-4 h-4 text-amber-500 animate-pulse" />}
                       {product.name}
                     </td>
-                    <td className="px-6 py-4 text-slate-300">{product.category}</td>
-                    <td className="px-6 py-4 text-slate-300">{product.cost_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
-                    <td className="px-6 py-4 text-emerald-400 font-medium">{product.sale_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
+                    <td className="px-6 py-4 text-slate-400 font-medium">{product.category}</td>
+                    <td className="px-6 py-4 text-slate-400 font-medium">{product.cost_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
+                    <td className="px-6 py-4 text-emerald-400 font-bold">{product.sale_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${isLow ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-slate-800 text-slate-300'}`}>
+                      <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-inner border ${isLow ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-white/10 text-slate-300 border-white/5'}`}>
                         {product.stock_quantity} dona
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right flex justify-end gap-3">
-                      <button onClick={() => { setEditProduct(product); setIsModalOpen(true); }} className="text-indigo-400 hover:text-indigo-300 transition-colors p-1" title="Tahrirlash">
+                      <button onClick={() => { setEditProduct(product); setIsModalOpen(true); }} className="text-indigo-400 hover:text-white p-2.5 rounded-xl bg-white/5 hover:bg-indigo-500/20 transition-all border border-transparent hover:border-indigo-500/30" title="Tahrirlash">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(product.id)} className="text-rose-400 hover:text-rose-300 transition-colors p-1" title="O'chirish">
+                      <button onClick={() => handleDelete(product.id)} className="text-rose-400 hover:text-white p-2.5 rounded-xl bg-white/5 hover:bg-rose-500/20 transition-all border border-transparent hover:border-rose-500/30" title="O'chirish">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
@@ -114,46 +114,46 @@ export function InventoryClient({ initialProducts }: { initialProducts: any[] })
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white">{editProduct ? 'Mahsulotni tahrirlash' : 'Yangi mahsulot qo\'shish'}</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl scale-in-95">
+            <div className="p-6 border-b border-white/5 bg-slate-900/90">
+              <h3 className="text-xl font-bold text-white tracking-wide">{editProduct ? 'Mahsulotni tahrirlash' : 'Yangi mahsulot qo\'shish'}</h3>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Mahsulot nomi</label>
-                <input required type="text" name="name" defaultValue={editProduct?.name || ''} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none" placeholder="Masalan: Coca-Cola 1L" />
+                <label className="block text-sm font-bold tracking-wide text-slate-300 mb-1.5 uppercase text-[10px]">Mahsulot nomi</label>
+                <input required type="text" name="name" defaultValue={editProduct?.name || ''} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all placeholder:text-slate-600" placeholder="Masalan: Coca-Cola 1L" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Kategoriya</label>
-                <input required type="text" name="category" defaultValue={editProduct?.category || ''} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none" placeholder="Ichimliklar" />
+                <label className="block text-sm font-bold tracking-wide text-slate-300 mb-1.5 uppercase text-[10px]">Kategoriya</label>
+                <input required type="text" name="category" defaultValue={editProduct?.category || ''} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all placeholder:text-slate-600" placeholder="Ichimliklar" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Kelish narxi (so'm)</label>
-                  <input required type="number" name="cost_price" defaultValue={editProduct?.cost_price || ''} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none" />
+                  <label className="block text-sm font-bold tracking-wide text-slate-300 mb-1.5 uppercase text-[10px]">Kelish narxi (so'm)</label>
+                  <input required type="number" name="cost_price" defaultValue={editProduct?.cost_price || ''} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Sotish narxi (so'm)</label>
-                  <input required type="number" name="sale_price" defaultValue={editProduct?.sale_price || ''} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none" />
+                  <label className="block text-sm font-bold tracking-wide text-slate-300 mb-1.5 uppercase text-[10px]">Sotish narxi (so'm)</label>
+                  <input required type="number" name="sale_price" defaultValue={editProduct?.sale_price || ''} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Boshlang'ich qoldiq</label>
-                  <input required type="number" name="stock_quantity" defaultValue={editProduct?.stock_quantity || ''} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none" />
+                  <label className="block text-sm font-bold tracking-wide text-slate-300 mb-1.5 uppercase text-[10px]">Boshlang'ich qoldiq</label>
+                  <input required type="number" name="stock_quantity" defaultValue={editProduct?.stock_quantity || ''} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Minimal ogohlantirish</label>
-                  <input required type="number" name="min_stock" defaultValue={editProduct?.min_stock || 5} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none" />
+                  <label className="block text-sm font-bold tracking-wide text-slate-300 mb-1.5 uppercase text-[10px]">Minimal ogohlantirish</label>
+                  <input required type="number" name="min_stock" defaultValue={editProduct?.min_stock || 5} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all" />
                 </div>
               </div>
               
-              <div className="flex gap-3 pt-4 mt-2">
-                <button type="button" onClick={() => { setIsModalOpen(false); setEditProduct(null); }} className="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">
+              <div className="flex gap-3 pt-6 border-t border-white/5 mt-6">
+                <button type="button" onClick={() => { setIsModalOpen(false); setEditProduct(null); }} className="flex-1 bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl text-sm font-bold transition-all active:scale-95 border border-white/5">
                   Bekor qilish
                 </button>
-                <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">
+                <button type="submit" className="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white py-3 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] active:scale-95">
                   Saqlash
                 </button>
               </div>
