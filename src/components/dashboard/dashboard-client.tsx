@@ -385,7 +385,6 @@ function ResourceCard({ resource, session, reservations = [], loadingAction, onS
   }
 
   return (
-  return (
     <div className={`relative bg-white/[0.03] backdrop-blur-xl rounded-[2rem] border p-5 overflow-hidden transition-all duration-500 flex flex-col hover:-translate-y-1 ${isOccupied ? 'border-rose-500/30 shadow-[0_10px_40px_rgba(244,63,94,0.15)]' : 'border-emerald-500/20 hover:border-emerald-500/40 shadow-[0_8px_30px_rgba(16,185,129,0.05)]'} ${isReservedSoon && !isOccupied ? 'animate-pulse border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]' : ''} ${isReservedSoon && isOccupied ? 'border-amber-500/80 shadow-[0_0_30px_rgba(245,158,11,0.4)]' : ''}`}>
       
       {resource.image_url && (
