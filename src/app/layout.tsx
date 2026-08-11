@@ -22,8 +22,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uz" className="dark">
-      <body className={`bg-slate-950 text-slate-50 min-h-screen flex antialiased font-sans`}>
-        {children}
+      <body className="bg-[#0a0a0a] text-slate-50 min-h-screen flex flex-col antialiased font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+        <main className="flex-1 w-full max-w-md mx-auto relative bg-[#0a0a0a] shadow-2xl min-h-screen pb-[env(safe-area-inset-bottom,0px)]">
+          {children}
+        </main>
       </body>
     </html>
   );

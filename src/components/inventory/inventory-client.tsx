@@ -126,104 +126,94 @@ export function InventoryClient({ initialProducts, initialMovements }: { initial
       </div>
 
       {activeTab === "stock" && (
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[1.5rem] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
-            <thead className="text-xs text-indigo-300 uppercase bg-slate-950/40 border-b border-white/5">
-              <tr>
-                <th className="px-6 py-5 font-bold tracking-wider">Mahsulot Nomi</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Kategoriya</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Kelish Narxi</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Sotish Narxi</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Qoldiq</th>
-                <th className="px-6 py-5 font-bold tracking-wider text-right">Harakatlar</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {initialProducts.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">
-                    Omborda hozircha mahsulot yo'q.
-                  </td>
-                </tr>
-              ) : initialProducts.map((product) => {
-                const isLow = product.stock_quantity <= product.min_stock;
-                return (
-                  <tr key={product.id} className="hover:bg-white/5 transition-colors duration-200">
-                    <td className="px-6 py-4 font-bold text-white flex items-center gap-2">
-                      {isLow && <AlertCircle className="w-4 h-4 text-amber-500 animate-pulse" />}
+        <div className="grid grid-cols-1 gap-4">
+          {initialProducts.length === 0 ? (
+            <div className="py-12 text-center text-slate-500 font-medium bg-slate-900/50 rounded-2xl border border-slate-800 border-dashed">
+              Omborda hozircha mahsulot yo'q.
+            </div>
+          ) : initialProducts.map((product) => {
+            const isLow = product.stock_quantity <= product.min_stock;
+            return (
+              <div key={product.id} className="bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-2xl p-4 shadow-lg flex flex-col gap-3 relative overflow-hidden transition-all active:scale-[0.98]">
+                {isLow && (
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/10 rounded-full blur-2xl -mr-8 -mt-8 animate-pulse"></div>
+                )}
+                
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-white text-lg flex items-center gap-2">
+                      {isLow && <AlertCircle className="w-4 h-4 text-amber-500" />}
                       {product.name}
-                    </td>
-                    <td className="px-6 py-4 text-slate-400 font-medium">{product.category}</td>
-                    <td className="px-6 py-4 text-slate-400 font-medium">{product.cost_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
-                    <td className="px-6 py-4 text-emerald-400 font-bold">{product.sale_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-inner border ${isLow ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-white/10 text-slate-300 border-white/5'}`}>
-                        {product.stock_quantity} dona
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right flex justify-end gap-3">
-                      <button onClick={() => { setEditProduct(product); setIsModalOpen(true); }} className="text-indigo-400 hover:text-white p-2.5 rounded-xl bg-white/5 hover:bg-indigo-500/20 transition-all border border-transparent hover:border-indigo-500/30" title="Tahrirlash">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleDelete(product.id)} className="text-rose-400 hover:text-white p-2.5 rounded-xl bg-white/5 hover:bg-rose-500/20 transition-all border border-transparent hover:border-rose-500/30" title="O'chirish">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </h3>
+                    <p className="text-xs text-indigo-400 mt-1 font-medium bg-indigo-500/10 inline-block px-2 py-0.5 rounded-full border border-indigo-500/20">{product.category}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => { setEditProduct(product); setIsModalOpen(true); }} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-indigo-400 hover:bg-indigo-500/20 transition-all active:scale-90 border border-white/5">
+                      <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => handleDelete(product.id)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-rose-400 hover:bg-rose-500/20 transition-all active:scale-90 border border-white/5">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 bg-slate-950/50 p-3 rounded-xl border border-white/5 mt-1">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Kelish</span>
+                    <span className="font-medium text-slate-300 text-sm">{product.cost_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</span>
+                  </div>
+                  <div className="flex flex-col border-l border-white/5 pl-3">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Sotish</span>
+                    <span className="font-bold text-emerald-400 text-sm">{product.sale_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</span>
+                  </div>
+                  <div className="flex flex-col border-l border-white/5 pl-3">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Qoldiq</span>
+                    <span className={`font-black text-lg leading-tight ${isLow ? 'text-amber-400' : 'text-indigo-400'}`}>
+                      {product.stock_quantity}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
       )}
 
       {activeTab === "history" && (
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[1.5rem] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
-            <thead className="text-xs text-indigo-300 uppercase bg-slate-950/40 border-b border-white/5">
-              <tr>
-                <th className="px-6 py-5 font-bold tracking-wider">Sana</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Mahsulot</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Turi</th>
-                <th className="px-6 py-5 font-bold tracking-wider">O'zgarish</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Yangi Qoldiq</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Izoh</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {!initialMovements || initialMovements.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">
-                    Harakatlar tarixi bo'sh.
-                  </td>
-                </tr>
-              ) : initialMovements.map((move) => (
-                <tr key={move.id} className="hover:bg-white/5 transition-colors duration-200">
-                  <td suppressHydrationWarning className="px-6 py-4 text-slate-400 font-medium">{new Date(move.created_at).toLocaleString("uz-UZ")}</td>
-                  <td className="px-6 py-4 font-bold text-white">{move.products?.name}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase border ${
-                      move.type === 'IN' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                      move.type === 'SALE' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 
-                      'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                    }`}>
-                      {move.type}
-                    </span>
-                  </td>
-                  <td className={`px-6 py-4 font-bold ${move.change_amount > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+        <div className="grid grid-cols-1 gap-3">
+          {!initialMovements || initialMovements.length === 0 ? (
+            <div className="py-12 text-center text-slate-500 font-medium bg-slate-900/50 rounded-2xl border border-slate-800 border-dashed">
+              Harakatlar tarixi bo'sh.
+            </div>
+          ) : initialMovements.map((move) => (
+            <div key={move.id} className="bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-2xl p-4 shadow-lg flex flex-col gap-2 relative transition-all active:scale-[0.98]">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold text-white">{move.products?.name}</h3>
+                  <p suppressHydrationWarning className="text-xs text-slate-500 mt-0.5">{new Date(move.created_at).toLocaleString("uz-UZ", { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
+                </div>
+                <div className={`flex flex-col items-end`}>
+                  <span className={`text-lg font-black ${move.change_amount > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {move.change_amount > 0 ? '+' : ''}{move.change_amount}
-                  </td>
-                  <td className="px-6 py-4 text-slate-300 font-medium">{move.new_stock} dona</td>
-                  <td className="px-6 py-4 text-slate-500">{move.reason || "-"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center mt-2 pt-2 border-t border-white/5">
+                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase border ${
+                  move.type === 'IN' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                  move.type === 'SALE' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 
+                  'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                }`}>
+                  {move.type}
+                </span>
+                <span className="text-xs font-medium text-slate-400">
+                  Qoldiq: <strong className="text-indigo-400">{move.new_stock}</strong>
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
       )}
 
       {isModalOpen && (
