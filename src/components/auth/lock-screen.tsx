@@ -185,7 +185,7 @@ export function LockScreen({ settings, onUnlock }: { settings: any, onUnlock: (r
 
       {/* Mode Switcher */}
       {!isLocked && (
-        <div className="absolute bottom-10">
+        <div className="mt-8 pt-4">
           <button 
             onClick={() => {
               setLoginMode(prev => prev === "cashier" ? "admin" : "cashier");
