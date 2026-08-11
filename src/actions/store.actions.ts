@@ -70,6 +70,16 @@ export async function processDirectSale(cartItems: any[], paymentMethod: string,
     const { data: product } = await supabase.from('products').select('stock_quantity').eq('id', item.id).single();
     if (product) {
       await supabase.from('products').update({ stock_quantity: product.stock_quantity - item.quantity }).eq('id', item.id);
+      
+      // record movement
+      await supabase.from("inventory_movements").insert([{
+        product_id: item.id,
+        previous_stock: product.stock_quantity,
+        change_amount: -item.quantity,
+        new_stock: product.stock_quantity - item.quantity,
+        type: 'SALE',
+        reason: "Do'kondan sotildi"
+      }]);
     }
   }
 

@@ -79,9 +79,11 @@ export async function addSessionItem(sessionId: string, productId: string, quant
     .from('inventory_movements')
     .insert([{
       product_id: productId,
-      type: 'sale',
-      quantity: quantity,
-      description: 'O`yin ichida sotildi'
+      type: 'SALE',
+      change_amount: -quantity,
+      previous_stock: product.stock_quantity,
+      new_stock: product.stock_quantity - quantity,
+      reason: "O'yin ichida sotildi"
     }]);
 
   revalidatePath('/');

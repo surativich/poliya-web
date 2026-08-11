@@ -28,7 +28,7 @@ export async function addProduct(formData: FormData) {
   const stock_quantity = parseInt(formData.get("stock_quantity") as string);
   const min_stock = parseInt(formData.get("min_stock") as string) || 5;
 
-  const { error } = await supabase
+  const { data: newProduct, error } = await supabase
     .from('products')
     .insert([{
       name,
@@ -37,10 +37,23 @@ export async function addProduct(formData: FormData) {
       sale_price,
       stock_quantity,
       min_stock
-    }]);
+    }])
+    .select()
+    .single();
 
   if (error) {
     return { success: false, error: error.message };
+  }
+
+  if (newProduct) {
+    await supabase.from("inventory_movements").insert([{
+      product_id: newProduct.id,
+      previous_stock: 0,
+      change_amount: stock_quantity,
+      new_stock: stock_quantity,
+      type: 'IN',
+      reason: 'Yangi mahsulot qo\'shildi'
+    }]);
   }
 
   revalidatePath('/inventory');
@@ -56,6 +69,9 @@ export async function updateProduct(formData: FormData) {
   const stock_quantity = parseInt(formData.get("stock_quantity") as string);
   const min_stock = parseInt(formData.get("min_stock") as string) || 5;
 
+  // get old product to check stock change
+  const { data: oldProduct } = await supabase.from('products').select('stock_quantity').eq('id', id).single();
+
   const { error } = await supabase
     .from('products')
     .update({
@@ -70,6 +86,18 @@ export async function updateProduct(formData: FormData) {
 
   if (error) {
     return { success: false, error: error.message };
+  }
+
+  if (oldProduct && oldProduct.stock_quantity !== stock_quantity) {
+    const diff = stock_quantity - oldProduct.stock_quantity;
+    await supabase.from("inventory_movements").insert([{
+      product_id: id,
+      previous_stock: oldProduct.stock_quantity,
+      change_amount: diff,
+      new_stock: stock_quantity,
+      type: diff > 0 ? 'IN' : 'ADJUST',
+      reason: 'Qoldiq tahrirlandi'
+    }]);
   }
 
   revalidatePath('/inventory');
