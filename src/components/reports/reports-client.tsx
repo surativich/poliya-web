@@ -1,9 +1,30 @@
 "use client";
 
-import { BarChart3, TrendingUp, Calendar, Clock, DollarSign, Banknote, CreditCard, Users, Activity, Package, Download } from "lucide-react";
+import { useState } from "react";
+import { BarChart3, TrendingUp, Calendar, Clock, DollarSign, Banknote, CreditCard, Users, Activity, Package, Download, Trash2, ShieldAlert, Loader2 } from "lucide-react";
 import { StatCard } from "@/components/dashboard/dashboard-client";
+import { clearAllTestData } from "@/actions/admin.actions";
+import { useRouter } from "next/navigation";
 
 export function ReportsClient({ initialData, stats, shopStats }: { initialData: any[], stats: any, shopStats: any }) {
+  const [isClearing, setIsClearing] = useState(false);
+  const router = useRouter();
+
+  const handleClearData = async () => {
+    if (!confirm("Barcha hisobotlar, tarix va xarajatlar butunlay o'chiriladi. Ishonchingiz komilmi?")) return;
+    if (!confirm("DIQQAT! Bu amalni orqaga qaytarib bo'lmaydi. Faqatgina test ma'lumotlarini o'chirish uchun ishlating!")) return;
+
+    setIsClearing(true);
+    const res = await clearAllTestData();
+    if (res.success) {
+      alert("Barcha ma'lumotlar muvaffaqiyatli tozalandi!");
+      router.refresh();
+    } else {
+      alert("Xatolik: " + res.error);
+    }
+    setIsClearing(false);
+  };
+
   // Simplistic stats calculation
   const totalRevenue = initialData.reduce((acc, curr) => acc + (curr.total_cost || 0), 0);
   const totalGames = initialData.length;
@@ -124,6 +145,32 @@ export function ReportsClient({ initialData, stats, shopStats }: { initialData: 
         <BarChart3 className="w-12 h-12 text-slate-700 mb-3" />
         <h3 className="text-lg font-medium text-slate-300">Grafiklar va batafsil tahlil</h3>
         <p className="text-sm text-slate-500 mt-2 max-w-sm">Tez kunda bu yerda oylik, haftalik va kunlik dinamik grafiklar paydo bo'ladi (Chart.js yoki Recharts yordamida).</p>
+      </div>
+
+      {/* Premium Footer with Clear Action */}
+      <div className="mt-16 pt-8 border-t border-white/5 flex flex-col items-center justify-center space-y-6 pb-12">
+        <button 
+          onClick={handleClearData}
+          disabled={isClearing}
+          className="flex items-center gap-2 text-xs font-medium text-slate-600 hover:text-rose-500 transition-colors bg-transparent border border-transparent hover:border-rose-500/20 hover:bg-rose-500/10 px-4 py-2 rounded-full disabled:opacity-50"
+        >
+          {isClearing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          Test ma'lumotlarini tozalash
+        </button>
+
+        <div className="text-center space-y-2">
+          <p className="text-sm font-bold text-slate-400">
+            Dasturchi bilan aloqa: <a href="https://t.me/surativich" target="_blank" className="text-indigo-400 hover:text-indigo-300 transition-colors">@surativich</a>
+          </p>
+          <p className="text-xs text-slate-500">
+            Email: <a href="mailto:oqdwer@gmail.com" className="hover:text-slate-300 transition-colors">oqdwer@gmail.com</a>
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 text-[10px] text-slate-600 font-medium tracking-wider uppercase">
+          <ShieldAlert className="w-3 h-3" />
+          <span>Barcha huquqlar himoyalangan &copy; {new Date().getFullYear()}</span>
+        </div>
       </div>
     </div>
   );
