@@ -265,6 +265,7 @@ export async function endSessionWithNewCustomer(
     customer_id: newCust.id,
     amount: totalCost,
     type: 'debt',
+    session_id: sessionId,
     description: 'O\'yin va mahsulotlar uchun qarz'
   }]);
 
