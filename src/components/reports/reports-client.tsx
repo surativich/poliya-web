@@ -12,7 +12,12 @@ export function ReportsClient({ initialData, stats, shopStats }: { initialData: 
 
   const handleClearData = async () => {
     if (!confirm("Barcha hisobotlar, tarix va xarajatlar butunlay o'chiriladi. Ishonchingiz komilmi?")) return;
-    if (!confirm("DIQQAT! Bu amalni orqaga qaytarib bo'lmaydi. Faqatgina test ma'lumotlarini o'chirish uchun ishlating!")) return;
+    
+    const password = prompt("Xavfsizlik parolini kiriting (Ma'lumotlarni o'chirish uchun):");
+    if (password !== "@Samar18") {
+      alert("Parol noto'g'ri kiritildi! O'chirish bekor qilindi.");
+      return;
+    }
 
     setIsClearing(true);
     const res = await clearAllTestData();
@@ -160,7 +165,7 @@ export function ReportsClient({ initialData, stats, shopStats }: { initialData: 
 
         <div className="text-center space-y-2">
           <p className="text-sm font-bold text-slate-400">
-            Dasturchi bilan aloqa: <a href="https://t.me/surativich" target="_blank" className="text-indigo-400 hover:text-indigo-300 transition-colors">@surativich</a>
+            Dasturchi bilan aloqa: <a href="https://t.me/camar_me" target="_blank" className="text-indigo-400 hover:text-indigo-300 transition-colors">@camar_me</a>
           </p>
           <p className="text-xs text-slate-500">
             Email: <a href="mailto:oqdwer@gmail.com" className="hover:text-slate-300 transition-colors">oqdwer@gmail.com</a>
