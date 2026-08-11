@@ -349,13 +349,14 @@ export function DashboardClient({
 
 export function StatCard({ title, value, icon: Icon, color, bgColor }: any) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4 hover:border-slate-700 transition-colors">
-      <div className={`w-12 h-12 rounded-lg ${bgColor} flex items-center justify-center`}>
+    <div className="relative overflow-hidden bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white/[0.04] transition-all">
+      <div className={`absolute top-0 right-0 w-32 h-32 blur-[50px] opacity-20 transition-colors duration-500 rounded-full ${bgColor} pointer-events-none -mr-10 -mt-10`} />
+      <div className={`w-12 h-12 rounded-xl ${bgColor} flex items-center justify-center shadow-inner relative z-10 border border-white/10`}>
         <Icon className={`w-6 h-6 ${color}`} />
       </div>
-      <div>
-        <p className="text-sm text-slate-400 font-medium">{title}</p>
-        <p className="text-lg font-bold text-white mt-0.5">{value}</p>
+      <div className="relative z-10">
+        <p className="text-xs text-slate-400 font-medium tracking-wide uppercase">{title}</p>
+        <p className="text-xl font-bold text-white mt-1 tracking-tight">{value}</p>
       </div>
     </div>
   );
@@ -384,72 +385,85 @@ function ResourceCard({ resource, session, reservations = [], loadingAction, onS
   }
 
   return (
-    <div className={`relative bg-white/5 backdrop-blur-md rounded-[1.5rem] border p-5 overflow-hidden transition-all duration-300 flex flex-col hover:-translate-y-1 ${isOccupied ? 'border-rose-500/20 hover:border-rose-500/40 shadow-[0_8px_30px_rgba(244,63,94,0.1)]' : 'border-emerald-500/20 hover:border-emerald-500/40 shadow-[0_8px_30px_rgba(16,185,129,0.05)]'} ${isReservedSoon && !isOccupied ? 'animate-pulse border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.3)]' : ''} ${isReservedSoon && isOccupied ? 'border-amber-500/80 shadow-[0_0_20px_rgba(245,158,11,0.5)]' : ''}`}>
+  return (
+    <div className={`relative bg-white/[0.03] backdrop-blur-xl rounded-[2rem] border p-5 overflow-hidden transition-all duration-500 flex flex-col hover:-translate-y-1 ${isOccupied ? 'border-rose-500/30 shadow-[0_10px_40px_rgba(244,63,94,0.15)]' : 'border-emerald-500/20 hover:border-emerald-500/40 shadow-[0_8px_30px_rgba(16,185,129,0.05)]'} ${isReservedSoon && !isOccupied ? 'animate-pulse border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]' : ''} ${isReservedSoon && isOccupied ? 'border-amber-500/80 shadow-[0_0_30px_rgba(245,158,11,0.4)]' : ''}`}>
       
       {resource.image_url && (
         <div 
-          className="absolute inset-0 z-0 opacity-20 bg-cover bg-center transition-opacity duration-300"
+          className="absolute inset-0 z-0 opacity-10 bg-cover bg-center transition-opacity duration-500 grayscale group-hover:grayscale-0"
           style={{ backgroundImage: `url(${resource.image_url})` }}
         />
       )}
-      <div className="absolute inset-0 z-0 bg-slate-950/40 mix-blend-multiply pointer-events-none" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-950/20 pointer-events-none" />
 
-      <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] opacity-20 pointer-events-none transition-colors duration-500 ${isOccupied ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
+      <div className={`absolute -top-12 -right-12 w-48 h-48 rounded-full blur-[80px] opacity-30 pointer-events-none transition-colors duration-700 ${isOccupied ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
 
-      <div className="flex justify-between items-start mb-5 relative z-10">
-        <div>
-          <h4 className="text-xl font-bold text-white flex items-center gap-2">
+      <div className="flex justify-between items-start mb-6 relative z-10">
+        <div className="flex flex-col">
+          <h4 className="text-2xl font-black text-white tracking-tight drop-shadow-md">
             {resource.name}
           </h4>
-          <p className="text-xs text-indigo-300/70 mt-1 font-medium tracking-wide">{rate.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm / soat</p>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="text-xs font-bold text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
+              {rate.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm/soat
+            </span>
+          </div>
         </div>
         
         {/* Status Badge */}
         <div className="flex flex-col items-end gap-2">
           {nextReservation && (
-            <div className={`px-2.5 py-1 text-[10px] font-bold rounded-full flex items-center gap-1.5 shadow-sm border ${isReservedSoon ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-slate-800/50 text-slate-300 border-white/5'}`}>
+            <div className={`px-3 py-1.5 text-[10px] font-bold rounded-xl flex items-center gap-1.5 shadow-sm border backdrop-blur-md ${isReservedSoon ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-slate-800/80 text-slate-300 border-white/10'}`}>
               <Clock className="w-3 h-3" />
               Bron: {nextReservation.dateObj.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })}
             </div>
           )}
-          <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-2 shadow-inner ${isOccupied ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
-            <span className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${isOccupied ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></span>
+          <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest flex items-center gap-2 shadow-inner backdrop-blur-md ${isOccupied ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'}`}>
+            <span className={`w-2 h-2 rounded-full shadow-[0_0_10px_currentColor] ${isOccupied ? 'bg-rose-500 animate-ping' : 'bg-emerald-500'}`}></span>
             {isOccupied ? 'BAND' : 'BO\'SH'}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-end space-y-5 relative z-10">
-        <div className="bg-slate-950/40 rounded-2xl p-5 text-center border border-white/5 shadow-inner">
-          <p className={`font-mono text-4xl font-black tracking-widest ${isOccupied ? 'text-white' : 'text-slate-600'}`}>
+      <div className="flex-1 flex flex-col justify-end space-y-6 relative z-10">
+        <div className={`rounded-2xl p-6 text-center border backdrop-blur-sm transition-all duration-500 ${isOccupied ? 'bg-rose-950/30 border-rose-500/20 shadow-[inset_0_0_30px_rgba(244,63,94,0.05)]' : 'bg-slate-900/50 border-white/5 shadow-inner'}`}>
+          <p className={`font-mono text-5xl font-black tracking-widest drop-shadow-lg ${isOccupied ? 'text-white' : 'text-slate-600'}`}>
             {isOccupied ? formattedTime : '00:00:00'}
           </p>
           {isOccupied && (
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-bold bg-white/5 inline-flex px-4 py-1.5 rounded-full border border-white/5">
-              <span className="text-indigo-300">O'yin: {currentAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</span>
-              {session.items_cost > 0 && <span className="text-emerald-400">Do'kon: {session.items_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</span>}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <span className="text-[11px] font-bold text-rose-300 bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20">
+                O'yin: {currentAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}
+              </span>
+              {session.items_cost > 0 && (
+                <span className="text-[11px] font-bold text-amber-300 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">
+                  Do'kon: {session.items_cost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}
+                </span>
+              )}
             </div>
           )}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-2">
           {isOccupied ? (
             <>
-              <button onClick={onAddProduct} className="flex-[2] bg-white/10 hover:bg-white/20 text-white py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95 border border-white/10">
-                + Mahsulot
+              <button onClick={onAddProduct} className="flex-[2] bg-white/5 hover:bg-white/10 text-white py-4 rounded-xl text-xs font-black tracking-wider transition-all active:scale-95 border border-white/10 backdrop-blur-md shadow-lg flex flex-col items-center justify-center gap-1">
+                <PackagePlus className="w-5 h-5 opacity-70" />
+                <span>SAVDO</span>
               </button>
               <button 
                 onClick={() => onEnd(session, resource, elapsedSeconds, currentAmount)}
-                className="flex-[3] flex justify-center items-center bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-[0_8px_25px_rgba(244,63,94,0.3)] border border-rose-400/20"
+                className="flex-[3] flex flex-col justify-center items-center bg-gradient-to-br from-rose-500 to-rose-700 hover:from-rose-400 hover:to-rose-600 text-white py-4 rounded-xl text-sm font-black tracking-wider transition-all active:scale-95 shadow-[0_10px_30px_rgba(244,63,94,0.4)] border border-rose-400/30 gap-1"
               >
-                Yakunlash
+                <Clock className="w-5 h-5 opacity-90" />
+                <span>YAKUNLASH</span>
               </button>
             </>
           ) : (
             <button 
               onClick={() => onStart(resource.id, rate)}
               disabled={isStarting}
-              className="w-full flex justify-center items-center bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-4 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-[0_8px_30px_rgba(16,185,129,0.3)] border border-emerald-400/20 disabled:opacity-50"
+              className="w-full flex justify-center items-center bg-gradient-to-br from-emerald-500 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600 text-white py-5 rounded-2xl text-sm font-black tracking-widest transition-all active:scale-95 shadow-[0_10px_40px_rgba(16,185,129,0.4)] border border-emerald-400/30 disabled:opacity-50 gap-2"
             >
               {isStarting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'BOSHLASH'}
             </button>
