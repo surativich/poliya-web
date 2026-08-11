@@ -106,51 +106,42 @@ export function SettingsClient({ initialResources }: { initialResources: any[] }
                 </button>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left whitespace-nowrap">
-                  <thead className="text-xs text-indigo-300 uppercase bg-slate-950/40 border-b border-white/5">
-                    <tr>
-                      <th className="px-4 py-3 font-bold tracking-wider">Rasm</th>
-                      <th className="px-4 py-3 font-bold tracking-wider">Nomi</th>
-                      <th className="px-4 py-3 font-bold tracking-wider">Turi</th>
-                      <th className="px-4 py-3 font-bold tracking-wider">Soatiga (so'm)</th>
-                      <th className="px-4 py-3 font-bold tracking-wider text-right">Amallar</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {initialResources.map(res => (
-                      <tr key={res.id} className="hover:bg-white/5 transition-colors">
-                        <td className="px-4 py-3">
-                          {res.image_url ? (
-                            <img src={res.image_url} alt={res.name} className="w-12 h-12 rounded-lg object-cover border border-white/10" />
-                          ) : (
-                            <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center text-slate-500 border border-white/10">yo'q</div>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 font-bold text-white">{res.name}</td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${res.type === "stadium" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}>
+              <div className="grid grid-cols-1 gap-3">
+                {initialResources.map(res => (
+                  <div key={res.id} className="bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-2xl p-4 shadow-lg flex flex-col gap-3 relative transition-all active:scale-[0.98]">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        {res.image_url ? (
+                          <img src={res.image_url} alt={res.name} className="w-12 h-12 rounded-xl object-cover border border-white/10 shadow-md" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500 border border-white/10 shadow-md"><SettingsIcon className="w-5 h-5"/></div>
+                        )}
+                        <div>
+                          <h3 className="font-bold text-white text-lg">{res.name}</h3>
+                          <span className={`px-2 py-0.5 mt-1 inline-block rounded-md text-[10px] font-bold uppercase tracking-wider ${res.type === "stadium" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}>
                             {res.type}
                           </span>
-                        </td>
-                        <td className="px-4 py-3 font-bold text-indigo-400">{res.hourly_rate.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")}</td>
-                        <td className="px-4 py-3 flex justify-end gap-2">
-                          <button onClick={() => { setEditResource(res); setIsModalOpen(true); }} className="p-2 bg-slate-800 hover:bg-indigo-500 hover:text-white text-slate-400 rounded-lg transition-colors">
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleDelete(res.id)} className="p-2 bg-slate-800 hover:bg-rose-500 hover:text-white text-slate-400 rounded-lg transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {initialResources.length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="px-4 py-8 text-center text-slate-500">Hali joylar qo'shilmagan.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Soatiga</span>
+                        <span className="font-black text-indigo-400 text-lg mt-0.5">{res.hourly_rate.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} sum</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-white/5">
+                      <button onClick={() => { setEditResource(res); setIsModalOpen(true); }} className="flex items-center gap-1.5 px-4 py-2 bg-slate-800/50 hover:bg-indigo-500/20 border border-slate-700/50 text-indigo-400 rounded-xl transition-colors active:scale-95 text-sm font-bold">
+                        <Edit className="w-4 h-4" /> Tahrirlash
+                      </button>
+                      <button onClick={() => handleDelete(res.id)} className="flex items-center gap-1.5 px-4 py-2 bg-slate-800/50 hover:bg-rose-500/20 border border-slate-700/50 text-rose-400 rounded-xl transition-colors active:scale-95 text-sm font-bold">
+                        <Trash2 className="w-4 h-4" /> O'chirish
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {initialResources.length === 0 && (
+                  <div className="px-4 py-8 text-center text-slate-500">Hali joylar qo'shilmagan.</div>
+                )}
               </div>
             </div>
           )}

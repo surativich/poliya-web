@@ -48,35 +48,27 @@ export function ExpensesClient({ initialExpenses }: { initialExpenses: any[] }) 
         </button>
       </div>
 
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[1.5rem] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left whitespace-nowrap">
-            <thead className="text-xs text-rose-300 uppercase bg-slate-950/40 border-b border-white/5">
-              <tr>
-                <th className="px-6 py-5 font-bold tracking-wider">Sana</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Kategoriya</th>
-                <th className="px-6 py-5 font-bold tracking-wider">Izoh</th>
-                <th className="px-6 py-5 font-bold tracking-wider text-right">Summa</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {initialExpenses.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-500 font-medium">
-                    Hali xarajatlar yo'q.
-                  </td>
-                </tr>
-              ) : initialExpenses.map((exp) => (
-                <tr key={exp.id} className="hover:bg-white/5 transition-colors duration-200">
-                  <td className="px-6 py-4 text-slate-400">{new Date(exp.created_at).toLocaleString("uz-UZ")}</td>
-                  <td className="px-6 py-4 font-bold text-white capitalize">{exp.category}</td>
-                  <td className="px-6 py-4 text-slate-400">{exp.description || "-"}</td>
-                  <td className="px-6 py-4 text-rose-400 font-bold text-right">{exp.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="grid grid-cols-1 gap-3">
+        {initialExpenses.length === 0 ? (
+          <div className="py-12 text-center text-slate-500 font-medium bg-slate-900/50 rounded-2xl border border-slate-800 border-dashed">
+            Hali xarajatlar yo'q.
+          </div>
+        ) : initialExpenses.map((exp) => (
+          <div key={exp.id} className="bg-slate-900/80 backdrop-blur-md border border-white/5 rounded-2xl p-4 shadow-lg flex flex-col gap-2 relative transition-all active:scale-[0.98]">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-bold text-white capitalize">{exp.category}</h3>
+                <p className="text-xs text-slate-500 mt-0.5">{new Date(exp.created_at).toLocaleString("uz-UZ", { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
+              </div>
+              <span className="text-lg font-black text-rose-400">-{exp.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} sum</span>
+            </div>
+            {exp.description && (
+              <div className="mt-2 pt-2 border-t border-white/5 text-sm text-slate-400">
+                {exp.description}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {isModalOpen && (

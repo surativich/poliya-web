@@ -68,7 +68,7 @@ export function InventoryClient({ initialProducts, initialMovements }: { initial
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-5">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <Package className="w-6 h-6 text-indigo-400" />
@@ -76,23 +76,33 @@ export function InventoryClient({ initialProducts, initialMovements }: { initial
           </h2>
           <p className="text-sm text-slate-400 mt-1">Mahsulotlar zaxirasini boshqarish va nazorat qilish.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <a
-            href="/api/excel-template"
-            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
-            download
-          >
-            <Download className="w-4 h-4" />
-            Shablon
-          </a>
+        
+        <div className="flex flex-col gap-3">
           <button 
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadingExcel}
-            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50"
+            onClick={() => { setEditProduct(null); setIsModalOpen(true); }}
+            className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-3.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] active:scale-[0.98]"
           >
-            {uploadingExcel ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
-            Excel yuklash
+            <Plus className="w-5 h-5" />
+            Qo'lda qo'shish
           </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingExcel}
+              className="flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              {uploadingExcel ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+              Excel
+            </button>
+            <a
+              href="/api/excel-template"
+              className="flex items-center justify-center gap-2 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-300 px-4 py-3 rounded-xl text-sm font-medium transition-all active:scale-[0.98]"
+              download
+            >
+              <Download className="w-4 h-4" />
+              Shablon
+            </a>
+          </div>
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -100,13 +110,6 @@ export function InventoryClient({ initialProducts, initialMovements }: { initial
             accept=".xlsx,.xls,.csv" 
             className="hidden" 
           />
-          <button 
-            onClick={() => { setEditProduct(null); setIsModalOpen(true); }}
-            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] active:scale-95"
-          >
-            <Plus className="w-5 h-5" />
-            Qo'lda qo'shish
-          </button>
         </div>
       </div>
 
