@@ -367,6 +367,15 @@ function ResourceCard({ resource, session, loadingAction, onStart, onEnd, onAddP
   return (
     <div className={`relative bg-white/5 backdrop-blur-md rounded-[1.5rem] border p-5 overflow-hidden transition-all duration-300 flex flex-col hover:-translate-y-1 ${isOccupied ? 'border-rose-500/20 hover:border-rose-500/40 shadow-[0_8px_30px_rgba(244,63,94,0.1)]' : 'border-emerald-500/20 hover:border-emerald-500/40 shadow-[0_8px_30px_rgba(16,185,129,0.05)]'}`}>
       
+      {/* Background Image if available */}
+      {resource.image_url && (
+        <div 
+          className="absolute inset-0 z-0 opacity-20 bg-cover bg-center transition-opacity duration-300"
+          style={{ backgroundImage: `url(${resource.image_url})` }}
+        />
+      )}
+      <div className="absolute inset-0 z-0 bg-slate-950/40 mix-blend-multiply pointer-events-none" />
+
       {/* Background gradient indicator */}
       <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[60px] opacity-20 pointer-events-none transition-colors duration-500 ${isOccupied ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
 
