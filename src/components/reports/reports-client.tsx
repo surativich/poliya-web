@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, TrendingUp, Calendar, Clock, DollarSign, Banknote, CreditCard, Users, Activity, Package } from "lucide-react";
+import { BarChart3, TrendingUp, Calendar, Clock, DollarSign, Banknote, CreditCard, Users, Activity, Package, Download } from "lucide-react";
 import { StatCard } from "@/components/dashboard/dashboard-client";
 
 export function ReportsClient({ initialData, stats, shopStats }: { initialData: any[], stats: any, shopStats: any }) {
@@ -11,12 +11,22 @@ export function ReportsClient({ initialData, stats, shopStats }: { initialData: 
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-indigo-400" />
-          Hisobotlar
-        </h2>
-        <p className="text-sm text-slate-400 mt-1">Biznesingizning asosiy ko'rsatkichlari va tahlillari.</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <BarChart3 className="w-6 h-6 text-indigo-400" />
+            Hisobotlar
+          </h2>
+          <p className="text-sm text-slate-400 mt-1">Biznesingizning asosiy ko'rsatkichlari va tahlillari.</p>
+        </div>
+        <a 
+          href="/api/export-reports" 
+          download 
+          className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] active:scale-95"
+        >
+          <Download className="w-4 h-4" />
+          Excel yuklab olish
+        </a>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
