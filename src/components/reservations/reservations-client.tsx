@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Plus, Clock, MapPin, CheckCircle, XCircle, User, Loader2 } from "lucide-react";
 import { createReservation, cancelReservation, fulfillReservation } from "@/actions/reservations.actions";
 import { useRouter } from "next/navigation";
@@ -9,26 +9,32 @@ export function ReservationsClient({ initialReservations, resources }: { initial
   const [reservations, setReservations] = useState(initialReservations);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [dateType, setDateType] = useState<'today'|'tomorrow'>('today');
-  const [timeValue, setTimeValue] = useState('');
+  
+  const days = useMemo(() => {
+    const d = [];
+    const today = new Date();
+    for (let i = 0; i < 14; i++) {
+      const newDate = new Date(today);
+      newDate.setDate(today.getDate() + i);
+      d.push(newDate);
+    }
+    return d;
+  }, []);
+
+  const [selectedDate, setSelectedDate] = useState(days[0]);
+  const [selectedHour, setSelectedHour] = useState(18);
+  const [selectedMinute, setSelectedMinute] = useState(0);
+  
   const router = useRouter();
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!timeValue) {
-      alert("Iltimos, vaqtni kiriting!");
-      return;
-    }
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     
     // Construct final date
-    const finalDate = new Date();
-    if (dateType === 'tomorrow') {
-      finalDate.setDate(finalDate.getDate() + 1);
-    }
-    const [hours, minutes] = timeValue.split(':');
-    finalDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    const finalDate = new Date(selectedDate);
+    finalDate.setHours(selectedHour, selectedMinute, 0, 0);
     
     formData.set('reservation_time', finalDate.toISOString());
 
@@ -184,31 +190,72 @@ export function ReservationsClient({ initialReservations, resources }: { initial
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Sana va Vaqt (Qachonga?)</label>
-                <div className="flex gap-2 mb-3">
-                  <button 
-                    type="button"
-                    onClick={() => setDateType('today')}
-                    className={`flex-1 py-3 rounded-xl font-bold border transition-colors ${dateType === 'today' ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50' : 'bg-white/5 text-slate-400 border-white/5 hover:bg-white/10'}`}
-                  >
-                    Bugun
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setDateType('tomorrow')}
-                    className={`flex-1 py-3 rounded-xl font-bold border transition-colors ${dateType === 'tomorrow' ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50' : 'bg-white/5 text-slate-400 border-white/5 hover:bg-white/10'}`}
-                  >
-                    Ertaga
-                  </button>
+              <div className="pt-2">
+                <div className="flex justify-between items-center mb-3">
+                  <label className="block text-sm font-medium text-slate-300">Sana</label>
+                  <span className="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+                    Oy: {selectedDate.toLocaleString('uz-UZ', { month: 'long' }).toUpperCase()}
+                  </span>
                 </div>
-                <input 
-                  required 
-                  type="time" 
-                  value={timeValue}
-                  onChange={(e) => setTimeValue(e.target.value)}
-                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500 transition-colors [color-scheme:dark]" 
-                />
+                
+                <div 
+                  className="flex overflow-x-auto gap-3 pb-3 snap-x scroll-smooth [&::-webkit-scrollbar]:hidden" 
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {days.map(day => {
+                    const isSelected = day.toDateString() === selectedDate.toDateString();
+                    return (
+                      <button 
+                        key={day.toISOString()}
+                        type="button" 
+                        onClick={() => setSelectedDate(day)}
+                        className={`snap-center flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center border transition-all ${isSelected ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50 scale-105 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-slate-950 text-slate-500 border-white/5 hover:bg-white/5'}`}
+                      >
+                        <span className="text-[10px] uppercase font-bold opacity-70 mb-1">{day.toLocaleString('uz-UZ', { weekday: 'short' })}</span>
+                        <span className={`text-2xl font-black ${isSelected ? 'text-indigo-400' : 'text-slate-300'}`}>{day.getDate()}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-3 text-center">Vaqtni tanlang (24 soat)</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="relative">
+                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 bg-white/5 border border-white/10 rounded-xl pointer-events-none z-0"></div>
+                    <div 
+                      className="h-40 overflow-y-auto snap-y snap-mandatory flex flex-col items-center [&::-webkit-scrollbar]:hidden relative z-10 scroll-smooth" 
+                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', padding: 'calc(5rem - 1.5rem) 0' }}
+                    >
+                      {Array.from({length: 24}).map((_, i) => (
+                        <button 
+                          key={i} type="button" onClick={() => setSelectedHour(i)}
+                          className={`snap-center shrink-0 w-full h-12 flex items-center justify-center text-xl font-bold transition-all duration-200 ${selectedHour === i ? 'text-white scale-110' : 'text-slate-500 hover:text-slate-300 scale-90'}`}
+                        >
+                          {i.toString().padStart(2, '0')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="relative">
+                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 bg-white/5 border border-white/10 rounded-xl pointer-events-none z-0"></div>
+                    <div 
+                      className="h-40 overflow-y-auto snap-y snap-mandatory flex flex-col items-center [&::-webkit-scrollbar]:hidden relative z-10 scroll-smooth" 
+                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', padding: 'calc(5rem - 1.5rem) 0' }}
+                    >
+                      {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+                        <button 
+                          key={m} type="button" onClick={() => setSelectedMinute(m)}
+                          className={`snap-center shrink-0 w-full h-12 flex items-center justify-center text-xl font-bold transition-all duration-200 ${selectedMinute === m ? 'text-white scale-110' : 'text-slate-500 hover:text-slate-300 scale-90'}`}
+                        >
+                          {m.toString().padStart(2, '0')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div>
