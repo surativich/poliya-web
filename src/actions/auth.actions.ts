@@ -16,7 +16,7 @@ export async function loginWithPin(pin: string) {
     .single();
 
   if (error || !user) {
-    return { success: false, error: "Noto`"g`"ri PIN-kod!" };
+    return { success: false, error: "Noto'g'ri PIN-kod!" };
   }
 
   const cookieStore = await cookies();

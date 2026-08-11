@@ -36,7 +36,7 @@ export function ExpensesClient({ initialExpenses }: { initialExpenses: any[] }) 
               <Wallet className="w-6 h-6 text-rose-400" />
               Xarajatlar
             </h2>
-            <p className="text-sm text-slate-400 mt-1">Jami chiqimlar: {totalExpenses.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so`"m</p>
+            <p className="text-sm text-slate-400 mt-1">Jami chiqimlar: {totalExpenses.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm</p>
           </div>
         </div>
         <button 
@@ -44,7 +44,7 @@ export function ExpensesClient({ initialExpenses }: { initialExpenses: any[] }) 
           className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(244,63,94,0.3)] hover:shadow-[0_0_25px_rgba(244,63,94,0.5)] active:scale-95"
         >
           <Plus className="w-5 h-5" />
-          Xarajat qo`"shish
+          Xarajat qo'shish
         </button>
       </div>
 
@@ -63,7 +63,7 @@ export function ExpensesClient({ initialExpenses }: { initialExpenses: any[] }) 
               {initialExpenses.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-slate-500 font-medium">
-                    Hali xarajatlar yo`"q.
+                    Hali xarajatlar yo'q.
                   </td>
                 </tr>
               ) : initialExpenses.map((exp) => (
@@ -71,7 +71,7 @@ export function ExpensesClient({ initialExpenses }: { initialExpenses: any[] }) 
                   <td className="px-6 py-4 text-slate-400">{new Date(exp.created_at).toLocaleString("uz-UZ")}</td>
                   <td className="px-6 py-4 font-bold text-white capitalize">{exp.category}</td>
                   <td className="px-6 py-4 text-slate-400">{exp.description || "-"}</td>
-                  <td className="px-6 py-4 text-rose-400 font-bold text-right">{exp.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so`"m</td>
+                  <td className="px-6 py-4 text-rose-400 font-bold text-right">{exp.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm</td>
                 </tr>
               ))}
             </tbody>
@@ -87,7 +87,7 @@ export function ExpensesClient({ initialExpenses }: { initialExpenses: any[] }) 
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-bold tracking-wide text-slate-300 mb-1.5 uppercase text-[10px]">Summa (so`"m)</label>
+                <label className="block text-sm font-bold tracking-wide text-slate-300 mb-1.5 uppercase text-[10px]">Summa (so'm)</label>
                 <input required type="number" name="amount" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-rose-500/50 outline-none transition-all placeholder:text-slate-600" />
               </div>
               <div>
@@ -96,7 +96,7 @@ export function ExpensesClient({ initialExpenses }: { initialExpenses: any[] }) 
                   <option value="ijara">Ijara</option>
                   <option value="oylik">Oylik maosh</option>
                   <option value="kommunal">Kommunal (Svet, Gaz, Suv)</option>
-                  <option value="xojalik">Xo`"jalik mollari</option>
+                  <option value="xojalik">Xo'jalik mollari</option>
                   <option value="boshqa">Boshqa</option>
                 </select>
               </div>

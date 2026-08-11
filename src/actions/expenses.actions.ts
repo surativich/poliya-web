@@ -25,7 +25,7 @@ export async function addExpense(formData: FormData) {
   const amount = parseInt(formData.get("amount") as string);
   const category = formData.get("category") as string;
   const description = formData.get("description") as string;
-  // TODO: getting user_id requires passing it or getting from cookie, but Supabase anon key won`"t know it unless we do.
+  // TODO: getting user_id requires passing it or getting from cookie, but Supabase anon key won't know it unless we do.
   // We can just leave user_id null for now or fetch role from cookie and insert.
 
   const { error } = await supabase.from("expenses").insert([{
