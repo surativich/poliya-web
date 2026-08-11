@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Package, BarChart3, History, Settings, ChevronRight } from "lucide-react";
+import { Package, BarChart3, History, Settings, ChevronRight, Wallet } from "lucide-react";
 
 export function AdminClient() {
   const adminLinks = [
     { name: "Ombor", description: "Mahsulotlar qoldig'i va narxlarini boshqarish", path: "/inventory", icon: Package, color: "text-emerald-400", bgColor: "bg-emerald-500/10" },
+    { name: "Xarajatlar", description: "Oylik, ijara va boshqa biznes chiqimlari", path: "/admin/expenses", icon: Wallet, color: "text-rose-400", bgColor: "bg-rose-500/10" },
     { name: "Hisobotlar", description: "Biznes tushumlari, foyda va statistika", path: "/reports", icon: BarChart3, color: "text-indigo-400", bgColor: "bg-indigo-500/10" },
     { name: "Tarix", description: "Barcha tugatilgan o'yinlar va savdolar tarixi", path: "/history", icon: History, color: "text-blue-400", bgColor: "bg-blue-500/10" },
     { name: "Sozlamalar", description: "Stadionlar va bilyard stollarini tahrirlash", path: "/settings", icon: Settings, color: "text-slate-400", bgColor: "bg-slate-500/10" },

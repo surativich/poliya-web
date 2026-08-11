@@ -2,18 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, History, Settings, Package, Store, Shield } from "lucide-react";
+import { LayoutDashboard, Users, History, Package, Store, Shield } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getCurrentRole } from "@/actions/auth.actions";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const [role, setRole] = useState<string | null>(null);
 
-  const mobileLinks = [
+  useEffect(() => {
+    getCurrentRole().then(r => setRole(r));
+  }, []);
+
+  const mobileLinks = role === "cashier" ? [
+    { name: "Asosiy", path: "/", icon: LayoutDashboard },
+    { name: "Do'kon", path: "/store", icon: Store },
+    { name: "Tarix", path: "/history", icon: History },
+    { name: "Qarzlar", path: "/debts", icon: Users },
+  ] : [
     { name: "Asosiy", path: "/", icon: LayoutDashboard },
     { name: "Do'kon", path: "/store", icon: Store },
     { name: "Ombor", path: "/inventory", icon: Package },
     { name: "Qarzlar", path: "/debts", icon: Users },
     { name: "Admin", path: "/admin", icon: Shield },
   ];
+
+  if (!role) return null; // Wait for role to load to prevent flicker
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-950/70 backdrop-blur-2xl border-t border-white/5 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">

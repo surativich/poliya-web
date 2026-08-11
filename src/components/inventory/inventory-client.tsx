@@ -5,7 +5,8 @@ import { Plus, Package, AlertCircle, Edit, Trash2 } from "lucide-react";
 import { addProduct, updateProduct, deleteProduct } from "@/actions/inventory.actions";
 import { useRouter } from "next/navigation";
 
-export function InventoryClient({ initialProducts }: { initialProducts: any[] }) {
+export function InventoryClient({ initialProducts, initialMovements }: { initialProducts: any[], initialMovements?: any[] }) {
+  const [activeTab, setActiveTab] = useState<"stock" | "history">("stock");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<any | null>(null);
   const router = useRouter();
@@ -61,6 +62,22 @@ export function InventoryClient({ initialProducts }: { initialProducts: any[] })
         </button>
       </div>
 
+      <div className="flex gap-4 border-b border-white/5 pb-4">
+        <button
+          onClick={() => setActiveTab("stock")}
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === "stock" ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "text-slate-400 hover:text-white bg-white/5"}`}
+        >
+          Ombor qoldig'i
+        </button>
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === "history" ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "text-slate-400 hover:text-white bg-white/5"}`}
+        >
+          Harakatlar tarixi
+        </button>
+      </div>
+
+      {activeTab === "stock" && (
       <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[1.5rem] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left whitespace-nowrap">
@@ -112,6 +129,54 @@ export function InventoryClient({ initialProducts }: { initialProducts: any[] })
           </table>
         </div>
       </div>
+      )}
+
+      {activeTab === "history" && (
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[1.5rem] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left whitespace-nowrap">
+            <thead className="text-xs text-indigo-300 uppercase bg-slate-950/40 border-b border-white/5">
+              <tr>
+                <th className="px-6 py-5 font-bold tracking-wider">Sana</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Mahsulot</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Turi</th>
+                <th className="px-6 py-5 font-bold tracking-wider">O'zgarish</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Yangi Qoldiq</th>
+                <th className="px-6 py-5 font-bold tracking-wider">Izoh</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {!initialMovements || initialMovements.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">
+                    Harakatlar tarixi bo'sh.
+                  </td>
+                </tr>
+              ) : initialMovements.map((move) => (
+                <tr key={move.id} className="hover:bg-white/5 transition-colors duration-200">
+                  <td className="px-6 py-4 text-slate-400 font-medium">{new Date(move.created_at).toLocaleString("uz-UZ")}</td>
+                  <td className="px-6 py-4 font-bold text-white">{move.products?.name}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase border ${
+                      move.type === 'IN' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                      move.type === 'SALE' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 
+                      'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                    }`}>
+                      {move.type}
+                    </span>
+                  </td>
+                  <td className={`px-6 py-4 font-bold ${move.change_amount > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {move.change_amount > 0 ? '+' : ''}{move.change_amount}
+                  </td>
+                  <td className="px-6 py-4 text-slate-300 font-medium">{move.new_stock} dona</td>
+                  <td className="px-6 py-4 text-slate-500">{move.reason || "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
