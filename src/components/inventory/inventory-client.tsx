@@ -1,15 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Package, AlertCircle, Edit, Trash2 } from "lucide-react";
-import { addProduct, updateProduct, deleteProduct } from "@/actions/inventory.actions";
+import { useState, useRef } from "react";
+import { Plus, Package, AlertCircle, Edit, Trash2, FileSpreadsheet, Loader2, Download } from "lucide-react";
+import { addProduct, updateProduct, deleteProduct, uploadExcelFile } from "@/actions/inventory.actions";
 import { useRouter } from "next/navigation";
 
 export function InventoryClient({ initialProducts, initialMovements }: { initialProducts: any[], initialMovements?: any[] }) {
   const [activeTab, setActiveTab] = useState<"stock" | "history">("stock");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<any | null>(null);
+  const [uploadingExcel, setUploadingExcel] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  async function handleExcelUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingExcel(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await uploadExcelFile(formData);
+    setUploadingExcel(false);
+    
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    if (res.success) {
+      alert("Mahsulotlar muvaffaqiyatli yuklandi!");
+      router.refresh();
+    } else {
+      alert("Xatolik: " + res.error);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -53,13 +76,38 @@ export function InventoryClient({ initialProducts, initialMovements }: { initial
           </h2>
           <p className="text-sm text-slate-400 mt-1">Mahsulotlar zaxirasini boshqarish va nazorat qilish.</p>
         </div>
-        <button 
-          onClick={() => { setEditProduct(null); setIsModalOpen(true); }}
-          className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] active:scale-95"
-        >
-          <Plus className="w-5 h-5" />
-          Yangi mahsulot
-        </button>
+        <div className="flex items-center gap-3">
+          <a
+            href="/api/excel-template"
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
+            download
+          >
+            <Download className="w-4 h-4" />
+            Shablon
+          </a>
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingExcel}
+            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50"
+          >
+            {uploadingExcel ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+            Excel yuklash
+          </button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleExcelUpload} 
+            accept=".xlsx,.xls,.csv" 
+            className="hidden" 
+          />
+          <button 
+            onClick={() => { setEditProduct(null); setIsModalOpen(true); }}
+            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] active:scale-95"
+          >
+            <Plus className="w-5 h-5" />
+            Qo'lda qo'shish
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-4 border-b border-white/5 pb-4">
