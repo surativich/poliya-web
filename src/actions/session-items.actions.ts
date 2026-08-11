@@ -74,6 +74,16 @@ export async function addSessionItem(sessionId: string, productId: string, quant
     .update({ stock_quantity: product.stock_quantity - quantity })
     .eq('id', productId);
 
+  // 5. Add inventory movement for history
+  await supabase
+    .from('inventory_movements')
+    .insert([{
+      product_id: productId,
+      type: 'sale',
+      quantity: quantity,
+      description: 'O`yin ichida sotildi'
+    }]);
+
   revalidatePath('/');
   return { success: true };
 }

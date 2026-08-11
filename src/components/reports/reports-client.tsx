@@ -20,10 +20,13 @@ export function ReportsClient({ initialData, stats }: { initialData: any[], stat
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Bugungi tushum" value={`${stats.totalIncome.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={DollarSign} color="text-emerald-400" bgColor="bg-emerald-500/10" />
-        <StatCard title="Naqd tushum" value={`${stats.cashIncome.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={Banknote} color="text-indigo-400" bgColor="bg-indigo-500/10" />
-        <StatCard title="Click/Payme" value={`${stats.cardIncome.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={CreditCard} color="text-blue-400" bgColor="bg-blue-500/10" />
+        <StatCard title="Jami Savdo" value={`${stats.totalRevenue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={Banknote} color="text-indigo-400" bgColor="bg-indigo-500/10" />
+        <StatCard title="Kassaga Tushum" value={`${stats.netCash.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={DollarSign} color="text-emerald-400" bgColor="bg-emerald-500/10" />
+        <StatCard title="Sof Kassa qoldig'i" value={`${stats.cashBalance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={CreditCard} color="text-teal-400" bgColor="bg-teal-500/10" />
         <StatCard title="Yangi qarzlar" value={`${stats.newDebts.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={Users} color="text-amber-400" bgColor="bg-amber-500/10" />
+        
+        <StatCard title="Xarajatlar" value={`${stats.totalExpenses.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={Activity} color="text-rose-400" bgColor="bg-rose-500/10" />
+        <StatCard title="Sof Foyda (Cho'ntakda)" value={`${stats.finalProfit.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={TrendingUp} color="text-emerald-400" bgColor="bg-emerald-500/10" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -36,7 +36,6 @@ export async function getActiveSessions() {
 }
 
 export async function getTodayStats() {
-  // Bugungi sanani boshlanishi (UTC yoki local bo'lishi mumkin, soddalik uchun o'tgan 24 soat olamiz)
   const today = new Date();
   today.setHours(0,0,0,0);
   const todayStr = today.toISOString();
@@ -51,36 +50,56 @@ export async function getTodayStats() {
     .from('debt_transactions')
     .select('*')
     .gte('created_at', todayStr);
+    
+  const { data: expenses } = await supabase
+    .from('expenses')
+    .select('*')
+    .gte('created_at', todayStr);
 
-  let totalIncome = 0;
-  let cashIncome = 0;
-  let cardIncome = 0;
-  let newDebts = 0;
+  let totalRevenue = 0; // Jami qilingan savdo (naqd + karta + qarz)
+  let netCash = 0;      // Kassaga tushgan real pul (naqd + karta o'yinlardan)
+  let newDebts = 0;     // Yangi berilgan qarzlar
+  let netProfit = 0;    // Sof foyda (tushum - tannarx)
+  let totalExpenses = 0; // Jami xarajatlar bugungi
 
   if (sessions) {
     sessions.forEach(s => {
-      totalIncome += s.total_cost || 0;
-      if (s.payment_method === 'cash') cashIncome += s.total_cost || 0;
-      if (s.payment_method === 'card') cardIncome += s.total_cost || 0;
-      if (s.payment_method === 'debt') newDebts += s.total_cost || 0;
+      totalRevenue += s.total_cost || 0;
+      netProfit += s.net_profit || 0;
+      
+      if (s.payment_method === 'cash' || s.payment_method === 'card') {
+        netCash += s.total_cost || 0;
+      }
+      if (s.payment_method === 'debt') {
+        newDebts += s.total_cost || 0;
+      }
     });
   }
 
   if (debts) {
     debts.forEach(d => {
+      // Qarz to'lovi kelsa, u kassaga naqd/karta bo'lib tushadi
       if (d.type === 'payment') {
-        // qarz to'lovi
         const paymentAmount = Math.abs(d.amount);
-        totalIncome += paymentAmount;
-        if (d.payment_method === 'cash') cashIncome += paymentAmount;
-        if (d.payment_method === 'card') cardIncome += paymentAmount;
-      } else if (d.type === 'debt') {
-        newDebts += Math.abs(d.amount);
-      }
+        netCash += paymentAmount;
+      } 
+      // Qarz berilishi (debt) allaqachon sessions loopida hisoblandi
+    });
+  }
+  
+  if (expenses) {
+    expenses.forEach(e => {
+      totalExpenses += e.amount || 0;
     });
   }
 
-  return { totalIncome, cashIncome, cardIncome, newDebts };
+  // Kassadagi sof qoldiq: Tushgan pullar - Xarajatlar
+  const cashBalance = netCash - totalExpenses;
+  
+  // Haqiqiy foydadan ham xarajatlarni ayirib yuborsak, bugungi toza cho'ntakka qoladigan pul chiqadi:
+  const finalProfit = netProfit - totalExpenses;
+
+  return { totalRevenue, netCash, cashBalance, newDebts, netProfit, finalProfit, totalExpenses };
 }
 
 export async function startSession(resourceId: string, hourlyRate: number) {
@@ -128,15 +147,24 @@ export async function endSession(
   newCustomerName?: string,
   newCustomerPhone?: string
 ) {
-  // 1. Get current session to get items_cost
-  const { data: session } = await supabase
-    .from('sessions')
-    .select('items_cost')
-    .eq('id', sessionId)
-    .single();
+  // 1. Get current session to get items_cost and calculate items profit
+  const { data: sessionItems } = await supabase
+    .from('session_items')
+    .select('total_price, unit_sale_price, unit_cost_price, quantity')
+    .eq('session_id', sessionId);
+    
+  let itemsCost = 0;
+  let itemsProfit = 0;
+  
+  if (sessionItems) {
+    sessionItems.forEach(item => {
+      itemsCost += item.total_price;
+      itemsProfit += (item.unit_sale_price - item.unit_cost_price) * item.quantity;
+    });
+  }
 
-  const itemsCost = session?.items_cost || 0;
   const totalCost = gameCost + itemsCost;
+  const netProfit = gameCost + itemsProfit; // Game cost is 100% profit
 
   // 2. Update session
   const { error } = await supabase
@@ -147,6 +175,7 @@ export async function endSession(
       total_seconds: totalSeconds,
       game_cost: gameCost,
       total_cost: totalCost,
+      net_profit: netProfit,
       payment_method: paymentMethod
     })
     .eq('id', sessionId);
@@ -218,15 +247,24 @@ export async function endSessionWithNewCustomer(
   const village = formData.get("village") as string || '';
   const photo = formData.get("photo") as File | null;
 
-  // 1. Get current session to get items_cost
-  const { data: session } = await supabase
-    .from('sessions')
-    .select('items_cost')
-    .eq('id', sessionId)
-    .single();
+  // 1. Get current session to get items_cost and calculate items profit
+  const { data: sessionItems } = await supabase
+    .from('session_items')
+    .select('total_price, unit_sale_price, unit_cost_price, quantity')
+    .eq('session_id', sessionId);
 
-  const itemsCost = session?.items_cost || 0;
+  let itemsCost = 0;
+  let itemsProfit = 0;
+  
+  if (sessionItems) {
+    sessionItems.forEach(item => {
+      itemsCost += item.total_price;
+      itemsProfit += (item.unit_sale_price - item.unit_cost_price) * item.quantity;
+    });
+  }
+
   const totalCost = gameCost + itemsCost;
+  const netProfit = gameCost + itemsProfit;
 
   // 2. Upload photo if exists
   let photo_url = null;
@@ -279,6 +317,7 @@ export async function endSessionWithNewCustomer(
       total_seconds: totalSeconds,
       game_cost: gameCost,
       total_cost: totalCost,
+      net_profit: netProfit,
       payment_method: 'debt'
     })
     .eq('id', sessionId);
