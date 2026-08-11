@@ -9,12 +9,29 @@ export function ReservationsClient({ initialReservations, resources }: { initial
   const [reservations, setReservations] = useState(initialReservations);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [dateType, setDateType] = useState<'today'|'tomorrow'>('today');
+  const [timeValue, setTimeValue] = useState('');
   const router = useRouter();
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!timeValue) {
+      alert("Iltimos, vaqtni kiriting!");
+      return;
+    }
     setLoading(true);
     const formData = new FormData(e.currentTarget);
+    
+    // Construct final date
+    const finalDate = new Date();
+    if (dateType === 'tomorrow') {
+      finalDate.setDate(finalDate.getDate() + 1);
+    }
+    const [hours, minutes] = timeValue.split(':');
+    finalDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    
+    formData.set('reservation_time', finalDate.toISOString());
+
     const res = await createReservation(formData);
     
     if (res.success) {
@@ -168,8 +185,30 @@ export function ReservationsClient({ initialReservations, resources }: { initial
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Sana va Vaqt</label>
-                <input required type="datetime-local" name="reservation_time" className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500 transition-colors [color-scheme:dark]" />
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Sana va Vaqt (Qachonga?)</label>
+                <div className="flex gap-2 mb-3">
+                  <button 
+                    type="button"
+                    onClick={() => setDateType('today')}
+                    className={`flex-1 py-3 rounded-xl font-bold border transition-colors ${dateType === 'today' ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50' : 'bg-white/5 text-slate-400 border-white/5 hover:bg-white/10'}`}
+                  >
+                    Bugun
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setDateType('tomorrow')}
+                    className={`flex-1 py-3 rounded-xl font-bold border transition-colors ${dateType === 'tomorrow' ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50' : 'bg-white/5 text-slate-400 border-white/5 hover:bg-white/10'}`}
+                  >
+                    Ertaga
+                  </button>
+                </div>
+                <input 
+                  required 
+                  type="time" 
+                  value={timeValue}
+                  onChange={(e) => setTimeValue(e.target.value)}
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-indigo-500 transition-colors [color-scheme:dark]" 
+                />
               </div>
 
               <div>
