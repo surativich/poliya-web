@@ -1,9 +1,9 @@
 "use client";
 
-import { BarChart3, TrendingUp, Calendar, Clock, DollarSign, Banknote, CreditCard, Users, Activity } from "lucide-react";
+import { BarChart3, TrendingUp, Calendar, Clock, DollarSign, Banknote, CreditCard, Users, Activity, Package } from "lucide-react";
 import { StatCard } from "@/components/dashboard/dashboard-client";
 
-export function ReportsClient({ initialData, stats }: { initialData: any[], stats: any }) {
+export function ReportsClient({ initialData, stats, shopStats }: { initialData: any[], stats: any, shopStats: any }) {
   // Simplistic stats calculation
   const totalRevenue = initialData.reduce((acc, curr) => acc + (curr.total_cost || 0), 0);
   const totalGames = initialData.length;
@@ -27,6 +27,45 @@ export function ReportsClient({ initialData, stats }: { initialData: any[], stat
         
         <StatCard title="Xarajatlar" value={`${stats.totalExpenses.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={Activity} color="text-rose-400" bgColor="bg-rose-500/10" />
         <StatCard title="Sof Foyda (Cho'ntakda)" value={`${stats.finalProfit.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`} icon={TrendingUp} color="text-emerald-400" bgColor="bg-emerald-500/10" />
+      </div>
+
+      <h3 className="text-xl font-bold tracking-tight text-white mb-4 mt-8 flex items-center gap-2">
+        <Package className="w-5 h-5 text-indigo-400" />
+        Do'kon (Bar) Tahlili
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-slate-400 font-medium text-sm">Do'kon Tushumi</h3>
+            <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+              <Banknote className="w-5 h-5 text-blue-500" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-white">{shopStats.shopRevenue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} <span className="text-lg text-slate-500 font-normal">so'm</span></p>
+          <div className="mt-4 text-sm text-slate-500">Sotilgan barcha mahsulotlar</div>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-slate-400 font-medium text-sm">Do'kon Foydasi</h3>
+            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-emerald-500" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-white">{shopStats.shopProfit.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} <span className="text-lg text-slate-500 font-normal">so'm</span></p>
+          <div className="mt-4 text-sm text-slate-500">Sotilganlardan tushgan sof foyda</div>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-slate-400 font-medium text-sm">Ombordagi Tovar Qiymati</h3>
+            <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+              <Package className="w-5 h-5 text-amber-500" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-white">{shopStats.totalInventoryCost.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} <span className="text-lg text-slate-500 font-normal">so'm</span></p>
+          <div className="mt-4 text-sm text-slate-500">Hozirgi tovarlarning kelish narxi (Sarmoya)</div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
