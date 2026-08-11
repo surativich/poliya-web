@@ -202,7 +202,7 @@ export function InventoryClient({ initialProducts, initialMovements }: { initial
                 </tr>
               ) : initialMovements.map((move) => (
                 <tr key={move.id} className="hover:bg-white/5 transition-colors duration-200">
-                  <td className="px-6 py-4 text-slate-400 font-medium">{new Date(move.created_at).toLocaleString("uz-UZ")}</td>
+                  <td suppressHydrationWarning className="px-6 py-4 text-slate-400 font-medium">{new Date(move.created_at).toLocaleString("uz-UZ")}</td>
                   <td className="px-6 py-4 font-bold text-white">{move.products?.name}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase border ${
