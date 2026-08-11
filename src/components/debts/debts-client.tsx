@@ -148,7 +148,7 @@ export function DebtsClient({ initialCustomers }: { initialCustomers: any[] }) {
 
       {/* Add Debt Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md shadow-2xl my-8">
             <div className="p-5 border-b border-slate-800">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -203,7 +203,7 @@ export function DebtsClient({ initialCustomers }: { initialCustomers: any[] }) {
 
       {/* Pay Debt Modal */}
       {payModal.isOpen && payModal.customer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm shadow-2xl">
             <div className="p-5 border-b border-slate-800">
               <h3 className="text-lg font-bold text-white">Qarzni to'lash</h3>

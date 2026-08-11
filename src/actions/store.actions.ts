@@ -7,7 +7,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function processDirectSale(cartItems: any[], paymentMethod: string, customerId?: string) {
+export async function processDirectSale(cartItems: any[], paymentMethod: string, customerId?: string, newCustomerName?: string, newCustomerPhone?: string) {
   if (cartItems.length === 0) return { success: false, error: "Savat bo'sh" };
 
   const totalCost = cartItems.reduce((acc, item) => acc + (item.sale_price * item.quantity), 0);
@@ -74,19 +74,39 @@ export async function processDirectSale(cartItems: any[], paymentMethod: string,
   }
 
   // 3. Handle debt if payment method is debt
-  if (paymentMethod === 'debt' && customerId) {
-    await supabase.from('debt_transactions').insert([{
-      customer_id: customerId,
-      amount: totalCost,
-      type: 'debt',
-      session_id: session.id,
-      description: "Do'kondan mahsulot"
-    }]);
+  if (paymentMethod === 'debt') {
+    let finalCustomerId = customerId;
 
-    // Update customer total_debt
-    const { data: customer } = await supabase.from('customers').select('total_debt').eq('id', customerId).single();
-    if (customer) {
-      await supabase.from('customers').update({ total_debt: (customer.total_debt || 0) + totalCost }).eq('id', customerId);
+    if (newCustomerName) {
+      const { data: newCust, error: custErr } = await supabase
+        .from('customers')
+        .insert([{
+          full_name: newCustomerName,
+          phone_number: newCustomerPhone || '',
+          total_debt: 0
+        }])
+        .select()
+        .single();
+        
+      if (newCust) {
+        finalCustomerId = newCust.id;
+      }
+    }
+
+    if (finalCustomerId) {
+      await supabase.from('debt_transactions').insert([{
+        customer_id: finalCustomerId,
+        amount: totalCost,
+        type: 'debt',
+        session_id: session.id,
+        description: "Do'kondan mahsulot"
+      }]);
+
+      // Update customer total_debt
+      const { data: customer } = await supabase.from('customers').select('total_debt').eq('id', finalCustomerId).single();
+      if (customer) {
+        await supabase.from('customers').update({ total_debt: (customer.total_debt || 0) + totalCost }).eq('id', finalCustomerId);
+      }
     }
   }
 

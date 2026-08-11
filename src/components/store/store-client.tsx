@@ -14,6 +14,8 @@ export function StoreClient({ products, customers }: { products: any[], customer
   
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [isNewCustomer, setIsNewCustomer] = useState(false);
+  const newCustomerFormRef = useRef<HTMLFormElement>(null);
 
   const router = useRouter();
 
@@ -68,9 +70,18 @@ export function StoreClient({ products, customers }: { products: any[], customer
   const handleCheckout = async (method: string) => {
     if (cart.length === 0) return;
     
-    if (method === 'debt' && !selectedCustomerId) {
-      setPaymentMethod('debt');
-      return;
+    if (method === 'debt') {
+      if (isNewCustomer) {
+        const formData = new FormData(newCustomerFormRef.current!);
+        const name = formData.get('name') as string;
+        if (!name?.trim()) {
+          alert("Iltimos, yangi mijozning ismini kiriting!");
+          return;
+        }
+      } else if (!selectedCustomerId) {
+        setPaymentMethod('debt');
+        return;
+      }
     }
 
     setLoadingAction('checkout');
@@ -81,7 +92,15 @@ export function StoreClient({ products, customers }: { products: any[], customer
       quantity: item.quantity
     }));
 
-    const res = await processDirectSale(cartData, method, method === 'debt' ? selectedCustomerId : undefined);
+    let newCustomerName;
+    let newCustomerPhone;
+    if (method === 'debt' && isNewCustomer && newCustomerFormRef.current) {
+      const formData = new FormData(newCustomerFormRef.current);
+      newCustomerName = formData.get('name') as string;
+      newCustomerPhone = formData.get('phone') as string;
+    }
+
+    const res = await processDirectSale(cartData, method, method === 'debt' && !isNewCustomer ? selectedCustomerId : undefined, newCustomerName, newCustomerPhone);
     
     if (!res.success) {
       alert("Xatolik: " + res.error);
@@ -257,24 +276,52 @@ export function StoreClient({ products, customers }: { products: any[], customer
 
               {paymentMethod === 'debt' ? (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                  <p className="text-sm font-medium text-slate-300">Qarz uchun mijozni tanlang:</p>
-                  <select 
-                    className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none focus:border-indigo-500 transition-colors"
-                    value={selectedCustomerId}
-                    onChange={(e) => setSelectedCustomerId(e.target.value)}
-                  >
-                    <option value="" disabled>Ro'yxatdan tanlang...</option>
-                    {customers.map(c => (
-                      <option key={c.id} value={c.id}>{c.full_name} ({c.phone_number || 'raqamsiz'})</option>
-                    ))}
-                  </select>
-                  <div className="flex gap-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-slate-300">Qarz uchun mijozni tanlang</h4>
+                    <button 
+                      onClick={() => setIsNewCustomer(prev => !prev)} 
+                      className="text-xs font-semibold text-indigo-400 hover:text-indigo-300"
+                    >
+                      {isNewCustomer ? "Ro'yxatdan tanlash" : "+ Yangi mijoz"}
+                    </button>
+                  </div>
+
+                  {isNewCustomer ? (
+                    <form ref={newCustomerFormRef} className="space-y-3 animate-in fade-in slide-in-from-top-2" onSubmit={(e) => { e.preventDefault(); handleCheckout('debt'); }}>
+                      <input 
+                        type="text" 
+                        name="name"
+                        placeholder="Mijozning ism-familiyasi (majburiy)" 
+                        required
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-white outline-none focus:border-indigo-500"
+                      />
+                      <input 
+                        type="text" 
+                        name="phone"
+                        placeholder="Telefon raqami (ixtiyoriy)" 
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-white outline-none focus:border-indigo-500"
+                      />
+                    </form>
+                  ) : (
+                    <select 
+                      className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none focus:border-indigo-500 transition-colors"
+                      value={selectedCustomerId}
+                      onChange={(e) => setSelectedCustomerId(e.target.value)}
+                    >
+                      <option value="" disabled>Ro'yxatdan tanlang...</option>
+                      {customers.map(c => (
+                        <option key={c.id} value={c.id}>{c.full_name} ({c.phone_number || 'raqamsiz'})</option>
+                      ))}
+                    </select>
+                  )}
+                  
+                  <div className="flex gap-3 pt-2">
                     <button onClick={() => setPaymentMethod(null)} className="flex-1 bg-white/5 border border-white/10 text-white py-4 rounded-2xl font-bold active:scale-95 transition-all">
                       Orqaga
                     </button>
                     <button 
                       onClick={() => handleCheckout('debt')}
-                      disabled={loadingAction === 'checkout' || !selectedCustomerId} 
+                      disabled={loadingAction === 'checkout' || (!isNewCustomer && !selectedCustomerId)} 
                       className="flex-[2] flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white py-4 rounded-2xl font-bold active:scale-95 transition-all shadow-[0_8px_30px_rgba(245,158,11,0.3)] disabled:opacity-50"
                     >
                       {loadingAction === 'checkout' ? <><Loader2 className="w-5 h-5 animate-spin" /> Yozilmoqda...</> : "TASDIQLASH"}
