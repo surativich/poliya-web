@@ -21,6 +21,7 @@ export function DashboardClient({
   reservations?: any[]
 }) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [addProductModal, setAddProductModal] = useState<{ isOpen: boolean, sessionId: string | null }>({ isOpen: false, sessionId: null });
   const [productSearch, setProductSearch] = useState('');
   const [selectedProductId, setSelectedProductId] = useState('');
   const [checkoutModal, setCheckoutModal] = useState<{ isOpen: boolean, session: any | null, resource: any | null, elapsedSeconds: number, gameCost: number, paidCash: string, paidCard: string, showCustomerSelect: boolean, selectedCustomerId: string, isNewCustomer: boolean }>({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, paidCash: '', paidCard: '', showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false });
