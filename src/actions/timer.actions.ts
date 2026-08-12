@@ -67,12 +67,9 @@ export async function getTodayStats() {
       totalRevenue += s.total_cost || 0;
       netProfit += s.net_profit || 0;
       
-      if (s.payment_method === 'cash' || s.payment_method === 'card') {
-        netCash += s.total_cost || 0;
-      }
-      if (s.payment_method === 'debt') {
-        newDebts += s.total_cost || 0;
-      }
+      // Calculate net cash from split payments
+      netCash += (s.paid_cash || 0) + (s.paid_card || 0);
+      newDebts += s.debt_amount || 0;
     });
   }
 
@@ -145,7 +142,10 @@ export async function endSession(
   paymentMethod: string, 
   customerId?: string,
   newCustomerName?: string,
-  newCustomerPhone?: string
+  newCustomerPhone?: string,
+  paidCash: number = 0,
+  paidCard: number = 0,
+  debtAmount: number = 0
 ) {
   // 1. Get current session to get items_cost and calculate items profit
   const { data: sessionItems } = await supabase
@@ -166,6 +166,9 @@ export async function endSession(
   const totalCost = gameCost + itemsCost;
   const netProfit = gameCost + itemsProfit; // Game cost is 100% profit
 
+  // If debtAmount is positive, ensure payment method is updated or handled
+  // Actually we use 'split' or the main payment method, but we record exact amounts
+
   // 2. Update session
   const { error } = await supabase
     .from('sessions')
@@ -176,7 +179,10 @@ export async function endSession(
       game_cost: gameCost,
       total_cost: totalCost,
       net_profit: netProfit,
-      payment_method: paymentMethod
+      payment_method: paymentMethod, // legacy or main method
+      paid_cash: paidCash,
+      paid_card: paidCard,
+      debt_amount: debtAmount
     })
     .eq('id', sessionId);
 
@@ -191,7 +197,7 @@ export async function endSession(
     .eq('id', resourceId);
     
   // 4. Handle debt if applicable
-  if (paymentMethod === 'debt') {
+  if (debtAmount > 0) {
     let finalCustomerId = customerId;
 
     // Create new customer if requested
@@ -201,7 +207,7 @@ export async function endSession(
         .insert([{
           full_name: newCustomerName,
           phone_number: newCustomerPhone || '',
-          total_debt: totalCost
+          total_debt: debtAmount
         }])
         .select()
         .single();
@@ -211,9 +217,9 @@ export async function endSession(
         // The debt is already accounted for in total_debt at creation, but we still need the transaction record
         await supabase.from('debt_transactions').insert([{
           customer_id: finalCustomerId,
-          amount: totalCost,
+          amount: debtAmount,
           type: 'debt',
-          description: 'O\'yin va mahsulotlar uchun qarz'
+          description: `Qarz (Naqd: ${paidCash}, Karta: ${paidCard})`
         }]);
       }
     } else if (finalCustomerId) {
@@ -222,11 +228,11 @@ export async function endSession(
       if (customer) {
         await supabase.from('debt_transactions').insert([{
           customer_id: finalCustomerId,
-          amount: totalCost,
+          amount: debtAmount,
           type: 'debt',
-          description: 'O\'yin va mahsulotlar uchun qarz'
+          description: `Qarz (Naqd: ${paidCash}, Karta: ${paidCard})`
         }]);
-        await supabase.from('customers').update({ total_debt: customer.total_debt + totalCost }).eq('id', finalCustomerId);
+        await supabase.from('customers').update({ total_debt: customer.total_debt + debtAmount }).eq('id', finalCustomerId);
       }
     }
   }
@@ -240,7 +246,10 @@ export async function endSessionWithNewCustomer(
   resourceId: string, 
   totalSeconds: number, 
   gameCost: number, 
-  formData: FormData
+  formData: FormData,
+  paidCash: number = 0,
+  paidCard: number = 0,
+  debtAmount: number = 0
 ) {
   const name = formData.get("name") as string;
   const phone = formData.get("phone") as string || '';
@@ -290,7 +299,7 @@ export async function endSessionWithNewCustomer(
       phone_number: phone,
       village,
       photo_url,
-      total_debt: totalCost
+      total_debt: debtAmount
     }])
     .select()
     .single();
@@ -302,10 +311,10 @@ export async function endSessionWithNewCustomer(
   // 4. Record debt
   await supabase.from('debt_transactions').insert([{
     customer_id: newCust.id,
-    amount: totalCost,
+    amount: debtAmount,
     type: 'debt',
     session_id: sessionId,
-    description: 'O\'yin va mahsulotlar uchun qarz'
+    description: `Qarz (Naqd: ${paidCash}, Karta: ${paidCard})`
   }]);
 
   // 5. Update session
@@ -318,7 +327,10 @@ export async function endSessionWithNewCustomer(
       game_cost: gameCost,
       total_cost: totalCost,
       net_profit: netProfit,
-      payment_method: 'debt'
+      payment_method: 'debt',
+      paid_cash: paidCash,
+      paid_card: paidCard,
+      debt_amount: debtAmount
     })
     .eq('id', sessionId);
 
