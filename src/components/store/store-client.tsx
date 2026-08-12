@@ -12,7 +12,9 @@ export function StoreClient({ products, customers }: { products: any[], customer
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   
-  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'debt' | 'split' | null>(null);
+  const [paidCash, setPaidCash] = useState('');
+  const [paidCard, setPaidCard] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const newCustomerFormRef = useRef<HTMLFormElement>(null);
@@ -100,7 +102,33 @@ export function StoreClient({ products, customers }: { products: any[], customer
       newCustomerPhone = formData.get('phone') as string;
     }
 
-    const res = await processDirectSale(cartData, method, method === 'debt' && !isNewCustomer ? selectedCustomerId : undefined, newCustomerName, newCustomerPhone);
+    let pCash = 0;
+    let pCard = 0;
+    let dAmount = 0;
+
+    if (method === 'split') {
+      pCash = parseInt(paidCash || '0');
+      pCard = parseInt(paidCard || '0');
+      dAmount = Math.max(0, cartTotal - pCash - pCard);
+
+      if (dAmount > 0) {
+        if (!selectedCustomerId && !isNewCustomer) {
+          setPaymentMethod('debt');
+          return;
+        }
+      }
+    }
+
+    const res = await processDirectSale(
+      cartData, 
+      method, 
+      (method === 'debt' || (method === 'split' && dAmount > 0)) && !isNewCustomer ? selectedCustomerId : undefined, 
+      newCustomerName, 
+      newCustomerPhone,
+      pCash,
+      pCard,
+      dAmount
+    );
     
     if (!res.success) {
       alert("Xatolik: " + res.error);
@@ -109,6 +137,8 @@ export function StoreClient({ products, customers }: { products: any[], customer
       setCart([]);
       setIsCartOpen(false);
       setPaymentMethod(null);
+      setPaidCash('');
+      setPaidCard('');
       setSelectedCustomerId("");
       router.refresh();
     }
@@ -229,7 +259,7 @@ export function StoreClient({ products, customers }: { products: any[], customer
                 </div>
                 Savat
               </h2>
-              <button onClick={() => { setIsCartOpen(false); setPaymentMethod(null); }} className="p-2.5 bg-white/5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors active:scale-90">
+              <button onClick={() => { setIsCartOpen(false); setPaymentMethod(null); setPaidCash(''); setPaidCard(''); }} className="p-2.5 bg-white/5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors active:scale-90">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -328,8 +358,55 @@ export function StoreClient({ products, customers }: { products: any[], customer
                     </button>
                   </div>
                 </div>
+              ) : paymentMethod === 'split' ? (
+                <div className="space-y-5 animate-in fade-in slide-in-from-right-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-black text-emerald-400 mb-2 uppercase tracking-widest">Naqd pul</label>
+                      <input 
+                        type="number" 
+                        placeholder="0"
+                        value={paidCash}
+                        onChange={(e) => setPaidCash(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white font-bold focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-slate-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-black text-blue-400 mb-2 uppercase tracking-widest">Karta / Click</label>
+                      <input 
+                        type="number" 
+                        placeholder="0"
+                        value={paidCard}
+                        onChange={(e) => setPaidCard(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white font-bold focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-700"
+                      />
+                    </div>
+                  </div>
+
+                  <div className={`border rounded-xl p-4 flex justify-between items-center transition-colors ${Math.max(0, cartTotal - parseInt(paidCash || '0') - parseInt(paidCard || '0')) > 0 ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-950/50 border-slate-800'}`}>
+                    <span className="text-sm font-medium text-slate-400">Qolayotgan qarz:</span>
+                    <span className={`text-xl font-black ${Math.max(0, cartTotal - parseInt(paidCash || '0') - parseInt(paidCard || '0')) > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
+                      {Math.max(0, cartTotal - parseInt(paidCash || '0') - parseInt(paidCard || '0')).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} so'm
+                    </span>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button onClick={() => setPaymentMethod(null)} className="flex-1 bg-white/5 border border-white/10 text-white py-4 rounded-2xl font-bold active:scale-95 transition-all">
+                      Orqaga
+                    </button>
+                    <button 
+                      onClick={() => handleCheckout('split')}
+                      disabled={loadingAction === 'checkout'} 
+                      className={`flex-[2] flex items-center justify-center gap-2 py-4 rounded-2xl font-bold active:scale-95 transition-all shadow-[0_8px_30px_rgba(245,158,11,0.3)] disabled:opacity-50 ${Math.max(0, cartTotal - parseInt(paidCash || '0') - parseInt(paidCard || '0')) > 0 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white'}`}
+                    >
+                      {loadingAction === 'checkout' ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                        Math.max(0, cartTotal - parseInt(paidCash || '0') - parseInt(paidCard || '0')) > 0 ? 'DAVOM ETISH' : 'TASDIQLASH'
+                      )}
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <button 
                     onClick={() => handleCheckout('cash')} 
                     disabled={loadingAction === 'checkout' || cart.length === 0} 
@@ -347,9 +424,16 @@ export function StoreClient({ products, customers }: { products: any[], customer
                   <button 
                     onClick={() => setPaymentMethod('debt')} 
                     disabled={loadingAction === 'checkout' || cart.length === 0} 
-                    className="bg-gradient-to-r from-slate-700 to-slate-800 text-amber-400 py-4 rounded-2xl text-sm font-bold active:scale-95 transition-all flex justify-center disabled:opacity-50 shadow-lg border border-amber-500/20"
+                    className="bg-gradient-to-r from-rose-500 to-rose-600 text-white py-4 rounded-2xl text-sm font-bold active:scale-95 transition-all flex justify-center disabled:opacity-50 shadow-[0_8px_25px_rgba(244,63,94,0.3)] border border-rose-400/20"
                   >
                     QARZ
+                  </button>
+                  <button 
+                    onClick={() => setPaymentMethod('split')} 
+                    disabled={loadingAction === 'checkout' || cart.length === 0} 
+                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-4 rounded-2xl text-sm font-bold active:scale-95 transition-all flex justify-center disabled:opacity-50 shadow-[0_8px_25px_rgba(99,102,241,0.3)] border border-indigo-400/20"
+                  >
+                    ARALASH
                   </button>
                 </div>
               )}

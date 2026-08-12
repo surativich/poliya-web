@@ -24,7 +24,7 @@ export function DashboardClient({
   const [addProductModal, setAddProductModal] = useState<{ isOpen: boolean, sessionId: string | null }>({ isOpen: false, sessionId: null });
   const [productSearch, setProductSearch] = useState('');
   const [selectedProductId, setSelectedProductId] = useState('');
-  const [checkoutModal, setCheckoutModal] = useState<{ isOpen: boolean, session: any | null, resource: any | null, elapsedSeconds: number, gameCost: number, paidCash: string, paidCard: string, showCustomerSelect: boolean, selectedCustomerId: string, isNewCustomer: boolean }>({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, paidCash: '', paidCard: '', showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false });
+  const [checkoutModal, setCheckoutModal] = useState<{ isOpen: boolean, session: any | null, resource: any | null, elapsedSeconds: number, gameCost: number, paidCash: string, paidCard: string, paymentMode: 'none' | 'split' | 'debt', selectedCustomerId: string, isNewCustomer: boolean }>({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, paidCash: '', paidCard: '', paymentMode: 'none', selectedCustomerId: '', isNewCustomer: false });
   const newCustomerFormRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
 
@@ -39,20 +39,39 @@ export function DashboardClient({
   };
 
   const handleEndClick = (session: any, resource: any, elapsedSeconds: number, gameCost: number) => {
-    setCheckoutModal({ isOpen: true, session, resource, elapsedSeconds, gameCost, paidCash: '', paidCard: '', showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false });
+    setCheckoutModal({ isOpen: true, session, resource, elapsedSeconds, gameCost, paidCash: '', paidCard: '', paymentMode: 'none', selectedCustomerId: '', isNewCustomer: false });
   };
 
-  const handleFinalizeCheckout = async () => {
+  const handleFinalizeCheckout = async (directMethod?: 'cash' | 'card') => {
     if (!checkoutModal.session || !checkoutModal.resource) return;
     
     const totalCost = checkoutModal.gameCost + (checkoutModal.session.items_cost || 0);
-    const paidCash = parseInt(checkoutModal.paidCash || '0');
-    const paidCard = parseInt(checkoutModal.paidCard || '0');
-    const debtAmount = Math.max(0, totalCost - paidCash - paidCard);
+    
+    let paidCash = 0;
+    let paidCard = 0;
+    let debtAmount = 0;
+
+    if (directMethod === 'cash') {
+      paidCash = totalCost;
+    } else if (directMethod === 'card') {
+      paidCard = totalCost;
+    } else if (checkoutModal.paymentMode === 'debt') {
+      debtAmount = totalCost;
+    } else {
+      paidCash = parseInt(checkoutModal.paidCash || '0');
+      paidCard = parseInt(checkoutModal.paidCard || '0');
+      debtAmount = Math.max(0, totalCost - paidCash - paidCard);
+    }
 
     if (debtAmount > 0) {
-      if (!checkoutModal.showCustomerSelect) {
-        setCheckoutModal(prev => ({ ...prev, showCustomerSelect: true }));
+      if (checkoutModal.paymentMode !== 'debt' && checkoutModal.paymentMode !== 'split') {
+        // This shouldn't happen with direct methods
+        return;
+      }
+      
+      // If we are in split mode but haven't selected a customer yet, switch to debt mode to show customer select
+      if (checkoutModal.paymentMode === 'split' && !checkoutModal.selectedCustomerId && !checkoutModal.isNewCustomer) {
+        setCheckoutModal(prev => ({ ...prev, paymentMode: 'debt' }));
         return;
       }
       
@@ -114,7 +133,7 @@ export function DashboardClient({
     }
     
     setLoadingAction(null);
-    setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, paidCash: '', paidCard: '', showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false });
+    setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, paidCash: '', paidCard: '', paymentMode: 'none', selectedCustomerId: '', isNewCustomer: false });
     router.refresh();
   };
 
@@ -307,8 +326,39 @@ export function DashboardClient({
               </div>
 
               <div className="p-6 space-y-5">
-                {!checkoutModal.showCustomerSelect ? (
-                  <div className="space-y-5 animate-in fade-in">
+                {checkoutModal.paymentMode === 'none' ? (
+                  <div className="grid grid-cols-2 gap-3 animate-in fade-in">
+                    <button 
+                      onClick={() => handleFinalizeCheckout('cash')} 
+                      disabled={loadingAction === 'checkout'} 
+                      className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-xl text-sm font-bold active:scale-95 transition-all flex justify-center disabled:opacity-50 shadow-[0_8px_25px_rgba(16,185,129,0.3)] border border-emerald-400/20"
+                    >
+                      {loadingAction === 'checkout' ? <Loader2 className="w-5 h-5 animate-spin" /> : "NAQD"}
+                    </button>
+                    <button 
+                      onClick={() => handleFinalizeCheckout('card')} 
+                      disabled={loadingAction === 'checkout'} 
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 rounded-xl text-sm font-bold active:scale-95 transition-all flex justify-center disabled:opacity-50 shadow-[0_8px_25px_rgba(59,130,246,0.3)] border border-blue-400/20"
+                    >
+                      {loadingAction === 'checkout' ? <Loader2 className="w-5 h-5 animate-spin" /> : "CLICK"}
+                    </button>
+                    <button 
+                      onClick={() => setCheckoutModal(prev => ({...prev, paymentMode: 'debt'}))} 
+                      disabled={loadingAction === 'checkout'} 
+                      className="bg-gradient-to-r from-rose-500 to-rose-600 text-white py-4 rounded-xl text-sm font-bold active:scale-95 transition-all flex justify-center disabled:opacity-50 shadow-[0_8px_25px_rgba(244,63,94,0.3)] border border-rose-400/20"
+                    >
+                      QARZ
+                    </button>
+                    <button 
+                      onClick={() => setCheckoutModal(prev => ({...prev, paymentMode: 'split'}))} 
+                      disabled={loadingAction === 'checkout'} 
+                      className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-4 rounded-xl text-sm font-bold active:scale-95 transition-all flex justify-center disabled:opacity-50 shadow-[0_8px_25px_rgba(99,102,241,0.3)] border border-indigo-400/20"
+                    >
+                      ARALASH
+                    </button>
+                  </div>
+                ) : checkoutModal.paymentMode === 'split' ? (
+                  <div className="space-y-5 animate-in fade-in slide-in-from-right-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[11px] font-black text-emerald-400 mb-2 uppercase tracking-widest">Naqd pul</label>
@@ -339,11 +389,16 @@ export function DashboardClient({
                       </span>
                     </div>
 
-                    <button onClick={handleFinalizeCheckout} disabled={loadingAction === 'checkout'} className={`w-full py-4 rounded-xl text-sm font-black tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${debtAmount > 0 ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white shadow-[0_10px_30px_rgba(245,158,11,0.3)] border border-amber-400/20' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.3)] border border-emerald-400/20'}`}>
-                      {loadingAction === 'checkout' ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                        debtAmount > 0 ? 'QARZGA YOZISH (DAVOM ETISH)' : 'YAKUNLASH (TO\'LANDI)'
-                      )}
-                    </button>
+                    <div className="flex gap-3 mt-4">
+                      <button onClick={() => setCheckoutModal(prev => ({...prev, paymentMode: 'none'}))} className="flex-1 bg-white/5 border border-white/10 text-white py-4 rounded-xl font-bold active:scale-95 transition-all text-sm">
+                        Orqaga
+                      </button>
+                      <button onClick={() => handleFinalizeCheckout()} disabled={loadingAction === 'checkout'} className={`flex-[2] py-4 rounded-xl text-sm font-black tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${debtAmount > 0 ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white shadow-[0_10px_30px_rgba(245,158,11,0.3)] border border-amber-400/20' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.3)] border border-emerald-400/20'}`}>
+                        {loadingAction === 'checkout' ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                          debtAmount > 0 ? 'DAVOM ETISH' : 'YAKUNLASH'
+                        )}
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
@@ -394,13 +449,18 @@ export function DashboardClient({
                       </div>
                     )}
                     
-                    <button onClick={handleFinalizeCheckout} disabled={loadingAction === 'checkout'} className="w-full mt-4 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white py-4 rounded-xl text-sm font-black tracking-wider transition-all disabled:opacity-50 shadow-[0_10px_30px_rgba(245,158,11,0.3)] border border-amber-400/20">
-                      {loadingAction === 'checkout' ? <><Loader2 className="w-5 h-5 animate-spin" /> Qarzga yozilmoqda...</> : "YAKUNLASH (QARZ QO'SHILDI)"}
-                    </button>
+                    <div className="flex gap-3 mt-4">
+                      <button onClick={() => setCheckoutModal(prev => ({...prev, paymentMode: 'none'}))} className="flex-1 bg-white/5 border border-white/10 text-white py-4 rounded-xl font-bold active:scale-95 transition-all text-sm">
+                        Orqaga
+                      </button>
+                      <button onClick={() => handleFinalizeCheckout()} disabled={loadingAction === 'checkout'} className="flex-[2] flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white py-4 rounded-xl text-sm font-black tracking-wider transition-all disabled:opacity-50 shadow-[0_10px_30px_rgba(245,158,11,0.3)] border border-amber-400/20">
+                        {loadingAction === 'checkout' ? <><Loader2 className="w-5 h-5 animate-spin" /> Yozilmoqda...</> : "TASDIQLASH"}
+                      </button>
+                    </div>
                   </div>
                 )}
                 
-                <button onClick={() => setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, paidCash: '', paidCard: '', showCustomerSelect: false, selectedCustomerId: '', isNewCustomer: false })} className="w-full mt-2 bg-transparent hover:bg-slate-800 text-slate-400 py-3 rounded-xl text-sm font-bold transition-colors">
+                <button onClick={() => setCheckoutModal({ isOpen: false, session: null, resource: null, elapsedSeconds: 0, gameCost: 0, paidCash: '', paidCard: '', paymentMode: 'none', selectedCustomerId: '', isNewCustomer: false })} className="w-full mt-2 bg-transparent hover:bg-slate-800 text-slate-400 py-3 rounded-xl text-sm font-bold transition-colors">
                   Bekor qilish
                 </button>
               </div>

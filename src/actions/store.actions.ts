@@ -7,7 +7,16 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function processDirectSale(cartItems: any[], paymentMethod: string, customerId?: string, newCustomerName?: string, newCustomerPhone?: string) {
+export async function processDirectSale(
+  cartItems: any[], 
+  paymentMethod: string, 
+  customerId?: string, 
+  newCustomerName?: string, 
+  newCustomerPhone?: string,
+  paidCash: number = 0,
+  paidCard: number = 0,
+  debtAmount: number = 0
+) {
   if (cartItems.length === 0) return { success: false, error: "Savat bo'sh" };
 
   const totalCost = cartItems.reduce((acc, item) => acc + (item.sale_price * item.quantity), 0);
@@ -44,6 +53,9 @@ export async function processDirectSale(cartItems: any[], paymentMethod: string,
       items_cost: totalCost,
       total_cost: totalCost,
       payment_method: paymentMethod,
+      paid_cash: paymentMethod === 'cash' ? totalCost : paidCash,
+      paid_card: paymentMethod === 'card' ? totalCost : paidCard,
+      debt_amount: paymentMethod === 'debt' ? totalCost : debtAmount,
       ended_at: new Date().toISOString()
     }])
     .select()
@@ -83,8 +95,10 @@ export async function processDirectSale(cartItems: any[], paymentMethod: string,
     }
   }
 
-  // 3. Handle debt if payment method is debt
-  if (paymentMethod === 'debt') {
+  // 3. Handle debt if payment method is debt or there is debt in split
+  const actualDebt = paymentMethod === 'debt' ? totalCost : debtAmount;
+  
+  if (actualDebt > 0) {
     let finalCustomerId = customerId;
 
     if (newCustomerName) {
@@ -106,7 +120,7 @@ export async function processDirectSale(cartItems: any[], paymentMethod: string,
     if (finalCustomerId) {
       await supabase.from('debt_transactions').insert([{
         customer_id: finalCustomerId,
-        amount: totalCost,
+        amount: actualDebt,
         type: 'debt',
         session_id: session.id,
         description: "Do'kondan mahsulot"
@@ -115,7 +129,7 @@ export async function processDirectSale(cartItems: any[], paymentMethod: string,
       // Update customer total_debt
       const { data: customer } = await supabase.from('customers').select('total_debt').eq('id', finalCustomerId).single();
       if (customer) {
-        await supabase.from('customers').update({ total_debt: (customer.total_debt || 0) + totalCost }).eq('id', finalCustomerId);
+        await supabase.from('customers').update({ total_debt: (customer.total_debt || 0) + actualDebt }).eq('id', finalCustomerId);
       }
     }
   }
