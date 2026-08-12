@@ -46,9 +46,10 @@ export function useTimer(
     seconds.toString().padStart(2, "0"),
   ].join(":");
 
-  // Calculate amount (integer arithmetic to avoid float issues)
   // Formula: (hourlyRate * elapsedSeconds) / 3600
-  const currentAmount = Math.floor((hourlyRate * elapsedSeconds) / 3600);
+  // Rounded to nearest 1000 sum
+  const rawAmount = (hourlyRate * elapsedSeconds) / 3600;
+  const currentAmount = Math.round(rawAmount / 1000) * 1000;
 
   return {
     elapsedSeconds,
